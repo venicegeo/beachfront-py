@@ -15,4 +15,10 @@ To build the docker image use the included docker-compose tasks:
 
     $ docker-compose build
 
-Which will build an image called 'bf-py'
+Which will build an image called 'bf-py'. Then the imgae can be run:
+
+    # this will run the image in interactive mode (open bash script)
+    $ docker-compose run bash
+
+    # this willl run the tests using the locally available image
+    $ docker-compose run test
