@@ -1,0 +1,21 @@
+version: '2'
+
+services:
+
+  build:
+    build:
+      context: .
+    image: beachfront:base
+
+  bash:
+    image: beachfront:base
+    entrypoint: /bin/bash
+    volumes:
+      - './data:/work/data'
+
+  test:
+    image: beachfront:base
+    entrypoint: nosetests tests -v -s
+    working_dir: /work
+    volumes:
+      - './data:/work/data'
