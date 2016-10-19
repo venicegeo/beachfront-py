@@ -6,29 +6,11 @@ import fiona
 from fiona.crs import from_epsg
 from skimage.morphology import dilation, square
 
-# TODO - update this function
-def _save_shapefile(fname, features):
-    schema = {
-        'geometry': 'LineString',
-        'properties': {
-            'id': 'int',
-            'source': 'str:24',
-        }
-    }
-    # TODO - get epsg from geojson
-    crs = from_epsg(32750)
-    with fiona.open(fname, 'w', 'ESRI Shapefile', schema, crs=crs) as output:
-        # ptypes = {k: fiona.prop_type(v) for k, v in output.schema['properties'].items()}
-        output.writerecords(features)
 
-
-def save_geojson(lines, fout, source='imagery'):
-    """ Save lines as GeoJSON file """
-    geojson = {
-        'type': 'FeatureCollection',
-        'features': [],
-    }
+def lines_to_features(lines, source='imagery'):
+    """ Create features from lines """
     gid = 0
+    features = []
     for line in lines:
         feature = {
             'type': 'Feature',
@@ -41,8 +23,33 @@ def save_geojson(lines, fout, source='imagery'):
                 'source': source
             }
         }
-        geojson['features'].append(feature)
+        features.append(feature)
         gid += 1
+    return features
+
+
+def save_shapefile(lines, fout, source='imagery'):
+    """ Create shapefile - NOTE: Currently assumes EPSG:4326! """
+    schema = {
+        'geometry': 'LineString',
+        'properties': {
+            'id': 'int',
+            'source': 'str:24',
+        }
+    }
+    features = lines_to_features(lines, source=source)
+    # TODO - get epsg from geojson
+    crs = from_epsg(4326)
+    with fiona.open(fout, 'w', 'ESRI Shapefile', schema, crs=crs) as output:
+        output.writerecords(features)
+
+
+def save_geojson(lines, fout, source='imagery'):
+    """ Save lines as GeoJSON file """
+    geojson = {
+        'type': 'FeatureCollection',
+        'features': lines_to_features(lines, source=source),
+    }
     with open(fout, 'w') as f:
         f.write(json.dumps(geojson))
     return fout

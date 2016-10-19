@@ -105,6 +105,12 @@ class TestMask(unittest.TestCase):
         os.remove(fout)
         # TODO - check populated geojson
 
+    def test_save_shapefile(self):
+        geoimg = self.create_image_with_box()
+        lines = vectorize.potrace(geoimg[0])
+        fout = os.path.join(os.path.dirname(__file__), 'test.shp')
+        vectorize.save_shapefile(lines, fout)
+
     # potrace does not trace lines, it's outer edge of polygons
     def _test_trace_line(self):
         """ Trace image of line """
@@ -160,7 +166,7 @@ class TestMask(unittest.TestCase):
                          [(0.65, 0.8), (0.8, 0.8), (0.8, 0.5), (0.8, 0.19999999999999996),
                          (0.5, 0.19999999999999996), (0.2, 0.19999999999999996), (0.2, 0.35)])
 
-    def test_potrace_image(self):
+    def _test_potrace_image(self):
         """ Trace landsat using an arbitrary cutoff """
         # get a complex test image (landsat)
         url = 'http://landsat-pds.s3.amazonaws.com/L8/139/045/LC81390452014295LGN00/LC81390452014295LGN00_B3.TIF'
