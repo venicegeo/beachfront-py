@@ -30,7 +30,7 @@ class TestProcess(unittest.TestCase):
         return geoimg
 
     def test_threshold(self):
-        """ Threshod binary image """
+        """ Threshold binary image """
         geoimg = self.create_bimodal_image()
         threshold = process.otsu_threshold(geoimg[0])
         bimg = geoimg[0].read() > threshold
