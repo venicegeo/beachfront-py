@@ -2,6 +2,16 @@
 
 bf-py is a library of functions used in the creation of shoreline extraction algorithms for the Beachfront project.
 
+## Modules
+
+
+### Vectorize
+
+The vectorize module supplies functions for tracing a binary imagery that may have nodata values, and converting to geo-located or lat-lon coordinates. 
+
+
+## Development
+
 ### Branches
 The 'develop' branch is the default branch and contains the latest accepted changes to the code base. Changes should be created in a branch and Pull Requests issues to the 'develop' branch. Releases (anything with a version number) should issue a PR to 'master', then tagged with the proper version using `git tag`. Thus, the 'master' branch will always contain the latest tagged release.
 
