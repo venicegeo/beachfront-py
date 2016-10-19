@@ -6,7 +6,7 @@ import beachfront
 from nose.tools import set_trace
 
 
-class TestMask(unittest.TestCase):
+class _TestMask(unittest.TestCase):
     """ Test masking functions """
 
     wfsurl = 'WFS:http://gsn-geose-loadbala-17usyyb36bfdl-1788485819.us-east-1.elb.amazonaws.com/geoserver/piazza/wfs?service=wfs&version=2.0.0'
