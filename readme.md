@@ -16,7 +16,7 @@ import gippy
 from beachfront.vectorize import potrace
 
 geoimg = gippy.GeoImage(filename)
-lines = potrace(geoimg[0], geoloc=[True,False])
+lines = potrace(geoimg[0], geoloc=*[True,False]*)
 ```
 
 If geoloc is True, then the coordinates returned will be geo-located in the same projection as the input raster. Otherwise the returned coordinates will be in lat-lon.
