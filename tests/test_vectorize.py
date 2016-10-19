@@ -1,19 +1,172 @@
+from __future__ import print_function
 import unittest
 import os
+import json
+import numpy
+import requests
 from gippy import Options
 from gippy import GeoImage
-import beachfront
+from beachfront import vectorize
 from nose.tools import set_trace
 
 
 class TestMask(unittest.TestCase):
     """ Test masking functions """
 
+    testname = os.path.join(os.path.dirname(__file__), 'test.tif')
+
     def setUp(self):
-        Options.set_verbose(4)
+        Options.set_verbose(2)
+        numpy.set_printoptions(precision=2)
 
+    def create_image(self, nodata=99):
+        """ Create test image """
+        geoimg = GeoImage.create(self.testname, xsz=10, ysz=10, dtype='byte')
+        geoimg.set_nodata(nodata)
+        return geoimg
 
-    def test_trace(self):
-        """ Trace binary image """
-        geoimg = GeoImage('test.tif', 100, 100)
-        
+    def create_empty_image(self):
+        """ Create emptry image """
+        geoimg = self.create_image()
+        arr = numpy.zeros((geoimg.xsize(), geoimg.ysize()), dtype='uint8')
+        geoimg[0].write(arr)
+        return geoimg
+
+    def create_image_with_line(self):
+        """ Create image with small line in middle """
+        geoimg = self.create_image()
+        arr = numpy.zeros((geoimg.xsize(), geoimg.ysize()), dtype='uint8')
+        # arr[40:60, 50] = 1
+        arr[2:8, 5] = 1
+        geoimg[0].write(arr)
+        self.truth_coords = [
+            [50.36996467799592, 50.0], [50.39062402284878, 46.0953125],
+            [50.530935406641134, 43.548242187499994], [50.66263873007813, 43.83125],
+            [50.73724191982458, 44.75], [50.73724191982458, 44.75],
+            [50.93924440283034, 50.0], [50.73724191982458, 55.25],
+            [50.73724191982458, 55.25], [50.66263873007813, 56.16875],
+            [50.530935406641134, 56.451757812500006], [50.39062402284878, 53.9046875], [50.36996467799592, 50.0]
+        ]
+        return geoimg
+
+    def create_image_with_box(self):
+        """ Create image with box in middle """
+        geoimg = self.create_image()
+        arr = numpy.zeros((geoimg.xsize(), geoimg.ysize()), dtype='uint8')
+        # arr[25:75, 25:75] = 1
+        arr[2:8, 2:8] = 1
+        geoimg[0].write(arr)
+        self.truth_coords = [
+            [0.2, 0.8], [0.5, 0.8], [0.8, 0.8], [0.8, 0.5], [0.8, 0.19999999999999996],
+            [0.5, 0.19999999999999996], [0.2, 0.19999999999999996], [0.2, 0.5]
+            # [0.2, 0.8], [0.5, 0.8], [0.8, 0.8], [0.8, 0.5], [0.8, 0.2], [0.5, 0.2], [0.2, 0.2], [0.2, 0.5]
+            # [0.25, 0.75], [0.5, 0.75], [0.75, 0.75], [0.75, 0.5], [0.75, 0.25], [0.5, 0.25], [0.25, 0.25], [0.25, 0.5]
+        ]
+        return geoimg
+
+    def delete_image(self):
+        """ Delete test image """
+        os.remove(self.testname)
+        self.assertFalse(os.path.exists(self.testname))
+
+    def download_image(self, url):
+        """ Download a test image """
+        fout = os.path.join(os.path.dirname(__file__), os.path.basename(url))
+        if not os.path.exists(fout):
+            print('Downloading image %s' % fout)
+            stream = requests.get(url, stream=True)
+            try:
+                with open(fout, 'wb') as f:
+                    for chunk in stream.iter_content(1024):
+                        f.write(chunk)
+            except:
+                raise Exception("Problem downloading %s" % url)
+        return GeoImage(fout)
+
+    def test_potrace_arrays(self):
+        """ Trace numpy arrays using potrace """
+        arr = numpy.zeros((10, 10), dtype='uint8')
+        lines = vectorize.potrace_array(arr)
+        self.assertEqual(type(lines), list)
+        self.assertEqual(len(lines), 0)
+
+    def test_save_geojson(self):
+        """ Validate geojson returned from trace """
+        geoimg = self.create_empty_image()
+        lines = vectorize.potrace(geoimg[0])
+        fout = os.path.join(os.path.dirname(__file__), 'test.geojson')
+        vectorize.save_geojson(lines, fout, source='test')
+        with open(fout, 'r') as f:
+            geojson = json.loads(f.read())
+        self.assertTrue('type' in geojson.keys())
+        self.assertEqual(geojson['type'], 'FeatureCollection')
+        self.assertTrue('features' in geojson.keys())
+        self.assertEqual(len(geojson['features']), 0)
+        os.remove(fout)
+        # TODO - check populated geojson
+
+    # potrace does not trace lines, it's outer edge of polygons
+    def _test_trace_line(self):
+        """ Trace image of line """
+        geoimg = self.create_image_with_line()
+        geojson = vectorize.potrace(geoimg[0], geoloc=False)
+
+        # check returned geometry
+        coords = geojson['features'][0]['geometry']['coordinates']
+        print(coords)
+        set_trace()
+        self.assertEqual(len(coords), len(self.truth_coords))
+        for c in coords:
+            self.assertTrue(c in self.truth_coords)
+
+    def test_potrace_box(self):
+        """ Trace image of box """
+        geoimg = self.create_image_with_box()
+        lines = vectorize.potrace(geoimg[0], geoloc=True)
+
+        # check returned geometry
+        self.assertEqual(len(lines[0]), len(self.truth_coords))
+        for c in lines[0]:
+            self.assertTrue(c in self.truth_coords)
+
+        self.delete_image()
+
+    def test_potrace_turdsize(self):
+        """ Trace line with turdsize smaller and larger than box """
+        geoimg = self.create_image_with_box()
+
+        # check that turdsize did not filter out box
+        lines = vectorize.potrace(geoimg[0], turdsize=30, geoloc=False)
+        self.assertEqual(len(lines[0]), len(self.truth_coords))
+
+        # check that turdsize does filter out box
+        lines = vectorize.potrace(geoimg[0], turdsize=50)
+        self.assertEqual(len(lines), 0)
+
+    def test_potrace_nodata(self):
+        """ Trace image with nodata present """
+        geoimg = self.create_image_with_box()
+        arr = geoimg.read()
+        # make a nodata region
+        arr[0:5, 0:5] = geoimg[0].nodata()
+        geoimg[0].write(arr)
+        lines = vectorize.potrace(geoimg[0], geoloc=False)
+
+        self.assertEqual(len(lines), 1)
+
+        self.assertEqual(len(lines[0]), 7)
+
+        self.assertEqual(lines[0],
+                         [(0.65, 0.8), (0.8, 0.8), (0.8, 0.5), (0.8, 0.19999999999999996),
+                         (0.5, 0.19999999999999996), (0.2, 0.19999999999999996), (0.2, 0.35)])
+
+    def test_potrace_image(self):
+        """ Trace landsat using an arbitrary cutoff """
+        # get a complex test image (landsat)
+        url = 'http://landsat-pds.s3.amazonaws.com/L8/139/045/LC81390452014295LGN00/LC81390452014295LGN00_B3.TIF'
+        geoimg = self.download_image(url)
+        geoimg.set_nodata(0)
+        lines = vectorize.potrace(geoimg[0] > 9500)
+        self.assertEqual(len(lines), 342)
+        fout = os.path.splitext(os.path.join(os.path.dirname(__file__), os.path.basename(url)))[0] + '.geojson'
+        vectorize.save_geojson(lines, fout)
