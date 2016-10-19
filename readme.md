@@ -9,6 +9,30 @@ bf-py is a library of functions used in the creation of shoreline extraction alg
 
 The vectorize module supplies functions for tracing a binary imagery that may have nodata values, and converting to geo-located or lat-lon coordinates. 
 
+The main way to use the vectorize module is on a Gippy GeoRaster, which is a band of a GeoImage.  The potrace() function will use potrace to trace the polygon (aka white, foreground) as a linestring, and convert it to lat-lon coordinates, or geo-located coordinates if desired.
+
+```
+import gippy
+from beachfront.vectorize import potrace
+
+geoimg = gippy.GeoImage(filename)
+lines = potrace(geoimg[0], geoloc=[True,False])
+```
+
+If geoloc is True, then the coordinates returned will be geo-located in the same projection as the input raster. Otherwise the returned coordinates will be in lat-lon.
+
+The save_geojson() and save_shapefile() functions can be used to save the lines to a file. Note that the save_shapefile currently assumes the lines are in lat-lon.
+
+```
+from beachfront.vectorize import save_geojson, save_shapefile
+
+save_geojson(lines, fout='my.geojson', source='mydatasource')
+save_shapefile(lines, fout='my.shp', source='mydatasource')
+```
+
+The source will be set as a field in the resulting output and should contain the data source, such as 'landsat8'.
+
+
 
 ## Development
 
