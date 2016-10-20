@@ -53,6 +53,7 @@ class TestProcess(unittest.TestCase):
         threshold = process.otsu_threshold(geoimg[0])
         geoimg[0] = geoimg[0] > threshold
 
-        fout = os.path.splitext(geoimg.filename())[0] + '_otsu' + geoimg.extension()
+        ext = os.path.splitext(geoimg.filename())[1]
+        fout = os.path.splitext(geoimg.filename())[0] + '_otsu' + ext
         geoimg.save(fout, dtype='uint8')
         print('\nPerform visual inspection on %s' % fout)
