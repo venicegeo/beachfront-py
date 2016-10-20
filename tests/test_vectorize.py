@@ -3,10 +3,9 @@ import unittest
 import os
 import json
 import numpy
-import requests
 from gippy import Options
-from gippy import GeoImage
 from beachfront import vectorize
+from .utils import create_image, download_image
 from nose.tools import set_trace
 
 
@@ -19,22 +18,9 @@ class TestMask(unittest.TestCase):
         Options.set_verbose(2)
         numpy.set_printoptions(precision=2)
 
-    def create_image(self, nodata=99):
-        """ Create test image """
-        geoimg = GeoImage.create(self.testname, xsz=10, ysz=10, dtype='byte')
-        geoimg.set_nodata(nodata)
-        return geoimg
-
-    def create_empty_image(self):
-        """ Create emptry image """
-        geoimg = self.create_image()
-        arr = numpy.zeros((geoimg.xsize(), geoimg.ysize()), dtype='uint8')
-        geoimg[0].write(arr)
-        return geoimg
-
     def create_image_with_line(self):
         """ Create image with small line in middle """
-        geoimg = self.create_image()
+        geoimg = create_image()
         arr = numpy.zeros((geoimg.xsize(), geoimg.ysize()), dtype='uint8')
         # arr[40:60, 50] = 1
         arr[2:8, 5] = 1
@@ -51,7 +37,7 @@ class TestMask(unittest.TestCase):
 
     def create_image_with_box(self):
         """ Create image with box in middle """
-        geoimg = self.create_image()
+        geoimg = create_image()
         arr = numpy.zeros((geoimg.xsize(), geoimg.ysize()), dtype='uint8')
         # arr[25:75, 25:75] = 1
         arr[2:8, 2:8] = 1
@@ -69,20 +55,6 @@ class TestMask(unittest.TestCase):
         os.remove(self.testname)
         self.assertFalse(os.path.exists(self.testname))
 
-    def download_image(self, url):
-        """ Download a test image """
-        fout = os.path.join(os.path.dirname(__file__), os.path.basename(url))
-        if not os.path.exists(fout):
-            print('Downloading image %s' % fout)
-            stream = requests.get(url, stream=True)
-            try:
-                with open(fout, 'wb') as f:
-                    for chunk in stream.iter_content(1024):
-                        f.write(chunk)
-            except:
-                raise Exception("Problem downloading %s" % url)
-        return GeoImage(fout)
-
     def test_potrace_arrays(self):
         """ Trace numpy arrays using potrace """
         arr = numpy.zeros((10, 10), dtype='uint8')
@@ -92,7 +64,7 @@ class TestMask(unittest.TestCase):
 
     def test_save_geojson(self):
         """ Validate geojson returned from trace """
-        geoimg = self.create_empty_image()
+        geoimg = create_image()
         lines = vectorize.potrace(geoimg[0])
         fout = os.path.join(os.path.dirname(__file__), 'test.geojson')
         vectorize.save_geojson(lines, fout, source='test')
@@ -170,9 +142,10 @@ class TestMask(unittest.TestCase):
         """ Trace landsat using an arbitrary cutoff """
         # get a complex test image (landsat)
         url = 'http://landsat-pds.s3.amazonaws.com/L8/139/045/LC81390452014295LGN00/LC81390452014295LGN00_B3.TIF'
-        geoimg = self.download_image(url)
+        geoimg = download_image(url)
         geoimg.set_nodata(0)
         lines = vectorize.potrace(geoimg[0] > 9500)
         self.assertEqual(len(lines), 342)
         fout = os.path.splitext(os.path.join(os.path.dirname(__file__), os.path.basename(url)))[0] + '.geojson'
         vectorize.save_geojson(lines, fout)
+        print('\nPerform visual inspection on %s' % fout)
