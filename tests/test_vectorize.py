@@ -6,7 +6,6 @@ import numpy
 from gippy import Options
 from beachfront import vectorize
 from .utils import create_image, download_image
-from nose.tools import set_trace
 
 
 class TestMask(unittest.TestCase):
@@ -78,6 +77,7 @@ class TestMask(unittest.TestCase):
         # TODO - check populated geojson
 
     def test_save_shapefile(self):
+        """ Save shapefile """
         geoimg = self.create_image_with_box()
         lines = vectorize.potrace(geoimg[0])
         fout = os.path.join(os.path.dirname(__file__), 'test.shp')
@@ -92,7 +92,6 @@ class TestMask(unittest.TestCase):
         # check returned geometry
         coords = geojson['features'][0]['geometry']['coordinates']
         print(coords)
-        set_trace()
         self.assertEqual(len(coords), len(self.truth_coords))
         for c in coords:
             self.assertTrue(c in self.truth_coords)
@@ -138,7 +137,7 @@ class TestMask(unittest.TestCase):
                          [(0.65, 0.8), (0.8, 0.8), (0.8, 0.5), (0.8, 0.19999999999999996),
                          (0.5, 0.19999999999999996), (0.2, 0.19999999999999996), (0.2, 0.35)])
 
-    def _test_potrace_image(self):
+    def test_potrace_image(self):
         """ Trace landsat using an arbitrary cutoff """
         # get a complex test image (landsat)
         url = 'http://landsat-pds.s3.amazonaws.com/L8/139/045/LC81390452014295LGN00/LC81390452014295LGN00_B3.TIF'

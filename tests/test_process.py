@@ -5,7 +5,6 @@ from gippy import Options
 from gippy import GeoImage
 from beachfront import process
 from .utils import create_image, download_image
-from nose.tools import set_trace
 
 
 class TestProcess(unittest.TestCase):
