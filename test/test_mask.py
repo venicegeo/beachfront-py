@@ -6,10 +6,11 @@ import beachfront
 from nose.tools import set_trace
 
 
-class _TestMask(unittest.TestCase):
+class TestMask(unittest.TestCase):
     """ Test masking functions """
 
     wfsurl = 'WFS:http://gsn-geose-loadbala-17usyyb36bfdl-1788485819.us-east-1.elb.amazonaws.com/geoserver/piazza/wfs?service=wfs&version=2.0.0'
+    #wfsurl = 'WFS:http://gsp-geose-loadbala-4ep8ufue9sxl-919040015.us-east-1.elb.amazonaws.com/geoserver/piazza/wfs?service=wfs&version=2.0.0'
     layername = '2d791d6c-dabb-4b28-8d23-d1d78d8d29ff'
     bbox = [-78.5964604299, -11.1797039494, -76.5056457676, -9.06874079313]
     bbox_32618 = [107085.0, -1236285.0, 334515.0, -1004385.0]
