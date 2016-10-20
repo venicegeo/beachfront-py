@@ -2,6 +2,7 @@ from osgeo import ogr, osr
 from gippy import GeoImage, GeoVector
 import gippy.algorithms as alg
 import json
+from nose.tools import set_trace
 
 
 def open_wfs(wfsurl, layername):
@@ -26,7 +27,7 @@ def get_unioned_features(layer, bbox):
     layer = get_features(layer, bbox)
     poly = ogr.Geometry(ogr.wkbPolygon)
     for feature in layer:
-        geom = feature.GetGeometryRef()
+        geom = feature.GetGeometryRef().GetLinearGeometry()
         poly = poly.Union(geom)
     return json.loads(poly.ExportToJson())
 
@@ -59,3 +60,8 @@ def mask(fname, vector):
     geoimg = GeoImage(fname)
     geovec = GeoVector(vector)
     imgout = alg.cookie_cutter([geoimg], geovec)
+
+
+def mask_bitmask(geoimg, bitmask):
+    """ Create mask from a bitmask """
+    return
