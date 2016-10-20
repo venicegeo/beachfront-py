@@ -4,7 +4,7 @@ import os
 from gippy import Options
 from gippy import GeoImage
 from beachfront import process
-from .utils import create_empty_image
+from .utils import create_image, download_image
 from nose.tools import set_trace
 
 
@@ -20,7 +20,7 @@ class TestProcess(unittest.TestCase):
 
     def create_bimodal_image(self):
         """ Create image with a bimodal distribution """
-        geoimg = create_empty_image()
+        geoimg = create_image()
         arr = geoimg.read()
         arr[0:3, 0:10] = 1
         arr[3:5, 0:10] = 2
@@ -32,6 +32,27 @@ class TestProcess(unittest.TestCase):
     def test_threshold(self):
         """ Threshold binary image """
         geoimg = self.create_bimodal_image()
+        threshold = round(process.otsu_threshold(geoimg[0]))
+        self.assertEqual(threshold, 2)
+
+        # add some nodata regions
+        arr = geoimg.read()
+        arr[4:6, 0:10] = geoimg[0].nodata()
+        geoimg[0].write(arr)
+        # test otsu threshold with nodata, should be similar since
+        # nodata regions were an even number of 2's and 9's that cancel
+        threshold = round(process.otsu_threshold(geoimg[0]))
+        self.assertEqual(threshold, 2)
+
+    def test_real_image(self):
+        """ Threshold a real image """
+        url = 'http://landsat-pds.s3.amazonaws.com/L8/139/045/LC81390452014295LGN00/LC81390452014295LGN00_B3.TIF'
+        geoimg = download_image(url)
+        geoimg.set_nodata(0)
+
         threshold = process.otsu_threshold(geoimg[0])
-        bimg = geoimg[0].read() > threshold
-        self.assertEqual(bimg.mean(), 0.5)
+        geoimg[0] = geoimg[0] > threshold
+
+        fout = os.path.splitext(geoimg.filename())[0] + '_otsu' + geoimg.extension()
+        geoimg.save(fout, dtype='uint8')
+        print('\nPerform visual inspection on %s' % fout)
