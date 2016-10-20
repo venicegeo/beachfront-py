@@ -9,7 +9,9 @@ __version__ = imp.load_source('beachfront.version', 'beachfront/version.py').__v
 
 # get the dependencies and installs
 with open(os.path.join(here, 'requirements.txt'), encoding='utf-8') as f:
-    reqs = f.read().split('\n')
+    install_requires = f.read().split('\n')
+with open(os.path.join(here, 'requirements-dev.txt'), encoding='utf-8') as f:
+    tests_require = f.read().split('\n')
 
 install_requires = [x.strip() for x in reqs if 'git+' not in x]
 
@@ -29,5 +31,5 @@ setup(
     packages=find_packages(exclude=['docs', 'tests*']),
     include_package_data=True,
     install_requires=install_requires,
-    tests_require=['nose'],
+    tests_require=[tests_require],
 )
