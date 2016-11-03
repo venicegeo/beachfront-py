@@ -13,7 +13,16 @@ load_dotenv(find_dotenv())
 class TestMask(unittest.TestCase):
     """ Test masking functions """
 
-    imgurl = 'http://landsat-pds.s3.amazonaws.com/L8/139/045/LC81390452014295LGN00/LC81390452014295LGN00_B3.TIF'
+    #imgurl = 'http://landsat-pds.s3.amazonaws.com/L8/139/045/LC81390452014295LGN00/LC81390452014295LGN00_B3.TIF'
+    #qimgurl = 'http://landsat-pds.s3.amazonaws.com/L8/139/045/LC81390452014295LGN00/LC81390452014295LGN00_BQA.TIF'
+
+    # some clouds
+    #imgurl = 'http://landsat-pds.s3.amazonaws.com/L8/092/087/LC80920872015033LGN00/LC80920872015033LGN00_B3.TIF'
+    #qimgurl = 'http://landsat-pds.s3.amazonaws.com/L8/092/087/LC80920872015033LGN00/LC80920872015033LGN00_BQA.TIF'
+
+    # cirrus
+    imgurl = 'http://landsat-pds.s3.amazonaws.com/L8/008/028/LC80080282016215LGN00/LC80080282016215LGN00_B3.TIF'
+    qimgurl = 'http://landsat-pds.s3.amazonaws.com/L8/008/028/LC80080282016215LGN00/LC80080282016215LGN00_BQA.TIF'
 
     wfsurl = os.environ.get('WFS_URL')
     layer = os.environ.get('LAYER')
@@ -41,15 +50,17 @@ class TestMask(unittest.TestCase):
         poly = mask.get_features(layer, bbox=self.bbox, union=True)
         self.assertAlmostEqual(poly['coordinates'][0][0][0], -77.5029, 4)
 
-    def _test_rasterize_layer(self):
-        """ Rasterize a layer (GDAL 2 only) """
-        ds, layer = mask.fetch_wfs(self.wfsurl, self.layer, bbox=self.bbox)
-        poly = mask.union_features(layer)        
-        geoimg = mask.rasterize_layer(layer)
-
     def test_mask_with_wfs(self):
         """ Mask image with a WFS using gippy cookie_cutter """
         geoimg = download_image(self.imgurl)
         geoimg.set_nodata(0)
         imgout = mask.mask_with_wfs(geoimg, self.wfsurl, self.layer)
         self.assertEqual(imgout.nbands(), 1)
+
+    def test_mask(self):
+        """ Mask image with a bitwise mask """
+        geoimg = download_image(self.imgurl)
+        bqaimg = download_image(self.qimgurl)
+        maskimg = mask.mask_with_landsat_bqa(geoimg, bqaimg)
+        arr = maskimg.read()
+        self.assertTrue(arr.sum(), 23096984)
