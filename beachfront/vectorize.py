@@ -44,12 +44,17 @@ def save_shapefile(lines, fout, source='imagery'):
         output.writerecords(features)
 
 
-def save_geojson(lines, fout, source='imagery'):
-    """ Save lines as GeoJSON file """
+def to_geojson(lines, source='imagery'):
     geojson = {
         'type': 'FeatureCollection',
         'features': lines_to_features(lines, source=source),
     }
+    return geojson
+
+
+def save_geojson(lines, fout, source='imagery'):
+    """ Save lines as GeoJSON file """
+    geojson = to_geojson(lines, source=source)
     with open(fout, 'w') as f:
         f.write(json.dumps(geojson))
     return fout
