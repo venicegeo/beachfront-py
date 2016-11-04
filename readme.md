@@ -5,6 +5,55 @@ bf-py is a library of functions used in the creation of shoreline extraction alg
 ## Modules
 
 
+### Mask
+
+The masking module is used for masking images with vectors (as in the case of a global buffered shoreline), or with a raster mask (such as one derived for clouds in the Landsat BQA band).
+
+
+```
+import gippy
+from beachfront.mask import fetch_wfs
+
+# get a WFS layer
+ds, layer = fetch_wfs(url, layername)
+
+# or, open a shapefile
+ds, layer = open_shapefile()
+
+# open an image assumed to be bimodal
+geoimg = gippy.GeoImage(filename)
+
+# calculate threshold on first band of image
+threshold = otsu_threshold(geoimg[0])
+print(threshold)
+
+
+
+```
+
+
+### Process
+
+The process module currently contains one function, calculating the otsu threshold of a raster image, but future general processing functions may be added in the future. 
+
+
+```
+import gippy
+from beachfront.process import otsh_threshold
+
+# open an image assumed to be bimodal
+geoimg = gippy.GeoImage(filename)
+
+# calculate threshold on first band of image
+threshold = otsu_threshold(geoimg[0])
+print(threshold)
+
+# print stats on image: min, max, mean, stddev
+print geoimg[0].stats()
+
+```
+
+
 ### Vectorize
 
 The vectorize module supplies functions for tracing a binary imagery that may have nodata values, and converting to geo-located or lat-lon coordinates. 
