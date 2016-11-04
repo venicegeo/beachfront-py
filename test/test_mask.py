@@ -31,36 +31,35 @@ class TestMask(unittest.TestCase):
     bbox_32618 = [107085.0, -1236285.0, 334515.0, -1004385.0]
 
     def setUp(self):
-        Options.set_verbose(5)
+        Options.set_verbose(2)
 
     def test_open_wfs(self):
         """ Open WFS and check number of features """
-        wfs, layer = mask.fetch_wfs(self.wfsurl, self.layer)
+        wfs, layer = mask.open_vector(self.wfsurl, self.layer)
         self.assertEqual(layer.GetFeatureCount(), 10686)
 
     def test_get_features(self):
         """ Open WFS using bounding box """
-        wfs, layer = mask.fetch_wfs(self.wfsurl, self.layer)
-        features = mask.get_features(layer, bbox=self.bbox)
+        wfs, layer = mask.open_vector(self.wfsurl, self.layer)
+        features = mask.get_features_as_geojson(layer, bbox=self.bbox)
         self.assertEqual(layer.GetFeatureCount(), 4)
 
     def test_get_features_unioned(self):
         """ Get union of all features within bounding box """
-        wfs, layer = mask.fetch_wfs(self.wfsurl, self.layer)
-        poly = mask.get_features(layer, bbox=self.bbox, union=True)
+        wfs, layer = mask.open_vector(self.wfsurl, self.layer)
+        poly = mask.get_features_as_geojson(layer, bbox=self.bbox, union=True)
         self.assertAlmostEqual(poly['coordinates'][0][0][0], -77.5029, 4)
 
     def test_mask_with_wfs(self):
         """ Mask image with a WFS using gippy cookie_cutter """
         geoimg = download_image(self.imgurl)
         geoimg.set_nodata(0)
-        imgout = mask.mask_with_wfs(geoimg, self.wfsurl, self.layer)
+        imgout = mask.mask_with_vector(geoimg, (self.wfsurl, self.layer))
         self.assertEqual(imgout.nbands(), 1)
 
     def test_mask(self):
-        """ Mask image with a bitwise mask """
-        geoimg = download_image(self.imgurl)
+        """ Create mask image from bitwise mask """
         bqaimg = download_image(self.qimgurl)
-        maskimg = mask.mask_with_landsat_bqa(geoimg, bqaimg)
+        maskimg = mask.create_mask_from_bitmask(bqaimg)
         arr = maskimg.read()
         self.assertTrue(arr.sum(), 23096984)
