@@ -56,12 +56,17 @@ def mask_with_vector(geoimg, vector, fout=''):
 def create_mask_from_bitmask(geoimg):
     """ Mask geoimg with a series of provided bitmasks """
     # medium and high confidence clouds
+    nodata = int('0000000000000001', 2)
     clouds = int('1000000000000000', 2)
     cirrus = int('0011000000000000', 2)
 
     # calculate mask
     arr = geoimg.read()
-    mask = (np.bitwise_and(arr, clouds) >= clouds) | (np.bitwise_and(arr, cirrus) >= cirrus)
+    # it is a good data mask
+    mask = (np.bitwise_and(arr, nodata) != nodata) & \
+           (np.bitwise_and(arr, clouds) < clouds) & \
+           (np.bitwise_and(arr, cirrus) < cirrus)
+    #mask = ((np.bitwise_and(arr, clouds) >= clouds) | (np.bitwise_and(arr, cirrus) >= cirrus))
 
     # create mask file
     maskimg = GeoImage.create_from(geoimg, dtype='uint8')
