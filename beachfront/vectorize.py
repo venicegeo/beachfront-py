@@ -4,7 +4,6 @@ import potrace as _potrace
 from pyproj import Proj, transform
 import fiona
 from fiona.crs import from_epsg
-from skimage.morphology import dilation, square
 
 
 def lines_to_features(lines, source='imagery'):
@@ -62,7 +61,6 @@ def save_geojson(lines, fout, source='imagery'):
 
 def potrace_array(arr, turdsize=10.0, tolerance=0.2):
     """ Trace numpy array using potrace """
-    # arr2 = filters.laplace(arr) > 0
     bmp = _potrace.Bitmap(arr)
     polines = bmp.trace(turdsize=turdsize, turnpolicy=_potrace.TURNPOLICY_WHITE,
                         alphamax=0.0, opticurve=1.0, opttolerance=tolerance)
@@ -77,13 +75,14 @@ def filter_nodata_lines(lines, mask):
     """ Apply mask (numpy array) to remove and split lines crossing nodata regions """
     if mask.max() == 0:
         raise Exception('Empty mask!')
-    mask = dilation(mask, square(3))
     newlines = []
     for line in lines:
         startloc = 0
         for loc in range(0, len(line)):
             # check if this is masked point
-            if mask[int(line[loc][1]), int(line[loc][0])]:
+            locx = int(line[loc][1])
+            locy = int(line[loc][0])
+            if mask[max(locx-2, 0):min(locx+2, mask.shape[0]), max(locy-2, 0):min(locy+2, mask.shape[0])].sum():
                 if (loc-startloc) > 1:
                     newlines.append(line[startloc:loc])
                 startloc = loc + 1
