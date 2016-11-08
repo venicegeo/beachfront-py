@@ -11,11 +11,10 @@ services:
     image: beachfront:base
     entrypoint: /bin/bash
     volumes:
-      - './data:/work/data'
+      - './:/work'
 
   test:
     image: beachfront:base
-    entrypoint: nosetests tests -v -s
-    working_dir: /work
+    entrypoint: bash -c 'nosetests test -v -s'
     volumes:
-      - './data:/work/data'
+      - './:/work'
