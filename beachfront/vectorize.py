@@ -82,7 +82,8 @@ def filter_nodata_lines(lines, mask):
             # check if this is masked point
             locx = int(line[loc][1])
             locy = int(line[loc][0])
-            if mask[max(locx-2, 0):min(locx+2, mask.shape[0]), max(locy-2, 0):min(locy+2, mask.shape[0])].sum():
+            sz = 4
+            if mask[max(locx-sz, 0):min(locx+sz, mask.shape[0]), max(locy-sz, 0):min(locy+sz, mask.shape[0])].sum():
                 if (loc-startloc) > 1:
                     newlines.append(line[startloc:loc])
                 startloc = loc + 1
