@@ -26,7 +26,7 @@ def get_features_as_geojson(layer, bbox=None, union=False):
             poly = poly.Union(geom)
     if bbox is not None:
         wkt = "POLYGON ((%s %s, %s %s, %s %s, %s %s, %s %s))" % \
-              (bbox[0], bbox[1], bbox[2], bbox[1], bbox[2], bbox[3], bbox[3], bbox[0], bbox[0], bbox[1])
+              (bbox[0], bbox[1], bbox[2], bbox[1], bbox[2], bbox[3], bbox[0], bbox[3], bbox[0], bbox[1])
         bbox_wkt = ogr.CreateGeometryFromWkt(wkt)
         poly = poly.Intersection(bbox_wkt)
     return json.loads(poly.ExportToJson())
@@ -41,19 +41,19 @@ def get_features(layer, bbox=None, union=False):
     return GeoVector('feature.geojson')
 
 
-def mask_with_vector(geoimg, vector, fout=''):
+def mask_with_vector(geoimg, vector, filename=''):
     """ Mask geoimage with a vector """
     ext = geoimg.geo_extent()
     wfs, layer = open_vector(vector[0], vector[1])
     geovec = get_features(layer, bbox=[ext.x0(), ext.y0(), ext.x1(), ext.y1()], union=True)
 
     res = geoimg.resolution()
-    imgout = alg.cookie_cutter([geoimg], feature=geovec[0],
+    imgout = alg.cookie_cutter([geoimg], filename=filename, feature=geovec[0],
                                proj=geoimg.srs(), xres=res.x(), yres=res.y())
     return imgout
 
 
-def create_mask_from_bitmask(geoimg):
+def create_mask_from_bitmask(geoimg, filename=''):
     """ Mask geoimg with a series of provided bitmasks """
     # medium and high confidence clouds
     nodata = int('0000000000000001', 2)
@@ -69,7 +69,7 @@ def create_mask_from_bitmask(geoimg):
     #mask = ((np.bitwise_and(arr, clouds) >= clouds) | (np.bitwise_and(arr, cirrus) >= cirrus))
 
     # create mask file
-    maskimg = GeoImage.create_from(geoimg, dtype='uint8')
+    maskimg = GeoImage.create_from(geoimg, filename=filename, dtype='uint8')
     maskimg.set_nodata(0)
     maskimg[0].write(mask.astype('uint8'))
 
