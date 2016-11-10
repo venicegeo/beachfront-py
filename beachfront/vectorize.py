@@ -71,8 +71,8 @@ def potrace_array(arr, turdsize=10.0, tolerance=0.2):
     return lines
 
 
-def filter_nodata_lines(lines, mask):
-    """ Apply mask (numpy array) to remove and split lines crossing nodata regions """
+def filter_nodata_lines(lines, mask, dist=1):
+    """ Remove nodes within dist pixels of nodata regions, splitting lines as needed  """
     if mask.max() == 0:
         raise Exception('Empty mask!')
     newlines = []
@@ -82,8 +82,8 @@ def filter_nodata_lines(lines, mask):
             # check if this is masked point
             locx = int(line[loc][1])
             locy = int(line[loc][0])
-            sz = 4
-            if mask[max(locx-sz, 0):min(locx+sz, mask.shape[0]), max(locy-sz, 0):min(locy+sz, mask.shape[0])].sum():
+            if mask[max(locx-dist, 0):min(locx+dist, mask.shape[0]), 
+                    max(locy-dist, 0):min(locy+dist, mask.shape[0])].sum():
                 if (loc-startloc) > 1:
                     newlines.append(line[startloc:loc])
                 startloc = loc + 1
