@@ -3,7 +3,6 @@ import os
 from gippy import Options
 from beachfront import mask
 from .utils import download_image
-from nose.tools import set_trace
 
 # load envvars
 from dotenv import load_dotenv, find_dotenv
@@ -25,8 +24,8 @@ class TestMask(unittest.TestCase):
     #qimgurl = 'http://landsat-pds.s3.amazonaws.com/L8/007/029/LC80070292016240LGN00/LC80070292016240LGN00_BQA.TIF'
 
     # cirrus
-    #imgurl = 'http://landsat-pds.s3.amazonaws.com/L8/008/028/LC80080282016215LGN00/LC80080282016215LGN00_B3.TIF'
-    #qimgurl = 'http://landsat-pds.s3.amazonaws.com/L8/008/028/LC80080282016215LGN00/LC80080282016215LGN00_BQA.TIF'
+    imgurl = 'http://landsat-pds.s3.amazonaws.com/L8/008/028/LC80080282016215LGN00/LC80080282016215LGN00_B3.TIF'
+    qimgurl = 'http://landsat-pds.s3.amazonaws.com/L8/008/028/LC80080282016215LGN00/LC80080282016215LGN00_BQA.TIF'
 
     wfsurl = os.environ.get('WFS_URL')
     layer = os.environ.get('LAYER')
@@ -51,8 +50,8 @@ class TestMask(unittest.TestCase):
     def test_get_features_unioned(self):
         """ Get union of all features within bounding box """
         wfs, layer = mask.open_vector(self.wfsurl, self.layer)
-        poly = mask.get_features_as_geojson(layer, bbox=self.bbox, union=False)
-        self.assertAlmostEqual(poly['coordinates'][0][0][0], -77.5029, 4)
+        poly = mask.get_features_as_geojson(layer, bbox=self.bbox, union=True)
+        self.assertAlmostEqual(poly['coordinates'][0][0][0], -78.0, 4)
 
     def test_mask_with_wfs(self):
         """ Mask image with a WFS using gippy cookie_cutter """
