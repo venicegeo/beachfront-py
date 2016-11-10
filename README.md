@@ -1,6 +1,6 @@
-# bf-py
+# beachfront
 
-bf-py is a library of functions used in the creation of shoreline extraction algorithms for the Beachfront project.
+beachfront-py (or just beachfront)  is a library of functions used in the creation of shoreline extraction algorithms for the Beachfront project.
 
 ## Installation
 There are several system libraries as well pip installable modules. Install scripts are provided in the install directory. Call them from this directory:
@@ -25,15 +25,6 @@ from beachfront.mask import open_vector
 # get a WFS layer
 ds, layer = open_vector(url, layername)
 
-# or, open a shapefile
-ds, layer = open_shapefile()
-
-# open an image assumed to be bimodal
-geoimg = gippy.GeoImage(filename)
-
-# calculate threshold on first band of image
-threshold = otsu_threshold(geoimg[0])
-print(threshold)
 
 ```
 
@@ -45,7 +36,7 @@ The process module currently contains one function, calculating the otsu thresho
 
 ```
 import gippy
-from beachfront.process import otsh_threshold
+from beachfront.process import otsu_threshold
 
 # open an image assumed to be bimodal
 geoimg = gippy.GeoImage(filename)
