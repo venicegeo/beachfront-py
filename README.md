@@ -2,6 +2,14 @@
 
 bf-py is a library of functions used in the creation of shoreline extraction algorithms for the Beachfront project.
 
+## Installation
+There are several system libraries as well pip installable modules. Install scripts are provided in the install directory. Call them from this directory:
+
+    $ install/centos.sh
+
+The script will install all system and python depdencies, and then run all tests in test/.
+
+
 ## Modules
 
 
@@ -12,10 +20,10 @@ The masking module is used for masking images with vectors (as in the case of a 
 
 ```
 import gippy
-from beachfront.mask import fetch_wfs
+from beachfront.mask import open_vector
 
 # get a WFS layer
-ds, layer = fetch_wfs(url, layername)
+ds, layer = open_vector(url, layername)
 
 # or, open a shapefile
 ds, layer = open_shapefile()
@@ -26,8 +34,6 @@ geoimg = gippy.GeoImage(filename)
 # calculate threshold on first band of image
 threshold = otsu_threshold(geoimg[0])
 print(threshold)
-
-
 
 ```
 
@@ -80,7 +86,6 @@ save_shapefile(lines, fout='my.shp', source='mydatasource')
 ```
 
 The source will be set as a field in the resulting output and should contain the data source, such as 'landsat8'.
-
 
 
 ## Development

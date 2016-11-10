@@ -12,4 +12,4 @@ pip install -r requirements-dev.txt
 pip install .
 
 # run tests
-nosetest test -v -s
+nosetests test -v -s
