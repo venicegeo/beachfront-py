@@ -1,6 +1,6 @@
 # beachfront
 
-beachfront-py (or just beachfront)  is a library of functions used in the creation of shoreline extraction algorithms for the Beachfront project.
+beachfront-py (or just beachfront) is a library of functions used for the extraction of shorelines.
 
 ## Installation
 There are several system libraries as well pip installable modules. Install scripts are provided in the install directory. Call them from this directory:
