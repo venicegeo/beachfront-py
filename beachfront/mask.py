@@ -5,11 +5,14 @@ import json
 import numpy as np
 
 
-def open_vector(filename, layer):
+def open_vector(filename, layer=''):
     """ Fetch wfs features within bounding box """
-    wfs = ogr.Open(filename)
-    layer = wfs.GetLayer(layer)
-    return (wfs, layer)
+    ds = ogr.Open(filename)
+    if layer == '':
+        layer = ds.GetLayer(0)
+    else:
+        layer = ds.GetLayer(layer)
+    return (ds, layer)
 
 
 def get_features_as_geojson(layer, bbox=None, union=False):
