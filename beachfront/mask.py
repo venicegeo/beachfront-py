@@ -47,7 +47,8 @@ def get_features(layer, bbox=None, union=False):
 def mask_with_vector(geoimg, vector, filename=''):
     """ Mask geoimage with a vector """
     ext = geoimg.geo_extent()
-    wfs, layer = open_vector(vector[0], vector[1])
+    ds, layer = open_vector(vector[0], vector[1])
+
     geovec = get_features(layer, bbox=[ext.x0(), ext.y0(), ext.x1(), ext.y1()], union=True)
 
     res = geoimg.resolution()
