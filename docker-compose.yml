@@ -5,16 +5,17 @@ services:
   build:
     build:
       context: .
-    image: beachfront:base
+    image: beachfront-py
 
   bash:
-    image: beachfront:base
+    image: beachfront-py
     entrypoint: /bin/bash
     volumes:
-      - './:/work'
+      - '.:/work:rw'
 
   test:
-    image: beachfront:base
-    entrypoint: bash -c 'nosetests test -v -s'
+    image: beachfront-py
+    command: bash -c 'nosetests -v -s;'
+    working_dir: /work
     volumes:
-      - './:/work'
+      - '.:/work:rw'
