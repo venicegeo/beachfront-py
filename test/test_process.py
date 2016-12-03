@@ -10,13 +10,6 @@ from .utils import create_image, download_image
 class TestProcess(unittest.TestCase):
     """ Test masking functions """
 
-    testname = os.path.join(os.path.dirname(__file__), 'test.tif')
-
-    def _setUp(self):
-        Options.set_verbose(4)
-        self.test_image = GeoImage('test.tif', 100, 100)
-        # TODO - create step function or other pattern in binary image
-
     def create_bimodal_image(self):
         """ Create image with a bimodal distribution """
         geoimg = create_image()

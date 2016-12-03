@@ -1,6 +1,7 @@
 from __future__ import print_function
 import unittest
 import os
+import glob
 import json
 import numpy
 from gippy import Options
@@ -80,8 +81,9 @@ class TestVectorize(unittest.TestCase):
         """ Save shapefile """
         geoimg = self.create_image_with_box()
         lines = vectorize.potrace(geoimg[0])
-        fout = os.path.join(os.path.dirname(__file__), 'test.shp')
-        vectorize.save_shapefile(lines, fout)
+        fout = os.path.join(os.path.dirname(__file__), 'test-shapefile')
+        vectorize.save_shapefile(lines, fout + '.shp')
+        [os.remove(f) for f in glob.glob(fout + '.*')]
 
     # potrace does not trace lines, it's outer edge of polygons
     def _test_trace_line(self):
