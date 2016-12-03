@@ -1,3 +1,5 @@
+import os
+import tempfile
 from osgeo import ogr
 from gippy import GeoImage, GeoVector
 import gippy.algorithms as alg
@@ -35,13 +37,18 @@ def get_features_as_geojson(layer, bbox=None, union=False):
     return json.loads(poly.ExportToJson())
 
 
-def get_features(layer, bbox=None, union=False):
+def get_features(layer, bbox=None, union=False, filename=''):
     """ Get features in this layer and return as GeoVector """
     features = get_features_as_geojson(layer, bbox=bbox, union=union)
-    with open('feature.geojson', 'w') as f:
-        f.write(json.dumps(features))
+    if filename == '':
+        f, filename = tempfile.mkstemp(suffix='.geojson')
+        os.write(f, json.dumps(features))
+        os.close(f)
+    else:
+        with open(filename, 'w') as f:
+            f.write(json.dumps(features))
     # create GeoVector
-    return GeoVector('feature.geojson')
+    return GeoVector(filename)
 
 
 def mask_with_vector(geoimg, vector, filename=''):
