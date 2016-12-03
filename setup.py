@@ -19,8 +19,9 @@ tests_require =[x.strip() for x in treqs if 'git+' not in x]
 setup(
     name='beachfront',
     version=__version__,
-    author='Matthew Hanson (matthewhanson)',
     description='library extracting coastline regions from raster data',
+    author='Matthew Hanson (matthewhanson)',
+    license='Apache 2.0',
     url='https://github.com/venicegeo/bf-py',
     classifiers=[
         'Framework :: Pytest',
