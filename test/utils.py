@@ -3,12 +3,9 @@ import numpy
 import requests
 from gippy import GeoImage
 
-default_fout = os.path.join(os.path.dirname(__file__), 'test.tif')
 
-
-def create_image(fout=None, xsz=10, ysz=10, nodata=99, empty=False):
+def create_image(fout='', xsz=10, ysz=10, nodata=99, empty=False):
     """ Create test image, empty means all nodata, otherwise 0  """
-    fout = default_fout if fout is None else fout
     geoimg = GeoImage.create(fout, xsz=xsz, ysz=ysz, dtype='byte')
     geoimg.set_nodata(nodata)
     if not empty:

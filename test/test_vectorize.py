@@ -12,8 +12,6 @@ from .utils import create_image, download_image
 class TestVectorize(unittest.TestCase):
     """ Test masking functions """
 
-    testname = os.path.join(os.path.dirname(__file__), 'test.tif')
-
     def setUp(self):
         Options.set_verbose(2)
         numpy.set_printoptions(precision=2)
@@ -49,11 +47,6 @@ class TestVectorize(unittest.TestCase):
             # [0.25, 0.75], [0.5, 0.75], [0.75, 0.75], [0.75, 0.5], [0.75, 0.25], [0.5, 0.25], [0.25, 0.25], [0.25, 0.5]
         ]
         return geoimg
-
-    def delete_image(self):
-        """ Delete test image """
-        os.remove(self.testname)
-        self.assertFalse(os.path.exists(self.testname))
 
     def test_potrace_arrays(self):
         """ Trace numpy arrays using potrace """
@@ -105,8 +98,6 @@ class TestVectorize(unittest.TestCase):
         self.assertEqual(len(lines[0]), len(self.truth_coords))
         for c in lines[0]:
             self.assertTrue(c in self.truth_coords)
-
-        self.delete_image()
 
     def test_potrace_turdsize(self):
         """ Trace line with turdsize smaller and larger than box """
