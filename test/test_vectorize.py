@@ -133,8 +133,6 @@ class TestVectorize(unittest.TestCase):
         self.assertEqual(lines[0],
                          [(0.8, 0.8), (0.8, 0.5), (0.8, 0.19999999999999996),
                          (0.5, 0.19999999999999996), (0.2, 0.19999999999999996)])
-        # [(0.65, 0.8), (0.8, 0.8), (0.8, 0.5), (0.8, 0.19999999999999996),
-        # (0.5, 0.19999999999999996), (0.2, 0.19999999999999996), (0.2, 0.35)])
 
     def test_potrace_image(self):
         """ Trace landsat using an arbitrary cutoff """
@@ -143,7 +141,7 @@ class TestVectorize(unittest.TestCase):
         geoimg = download_image(url)
         geoimg.set_nodata(0)
         lines = vectorize.potrace(geoimg[0] > 9500)
-        #self.assertEqual(len(lines), 342)
+        self.assertEqual(len(lines), 383)
         fout = os.path.splitext(os.path.join(os.path.dirname(__file__), os.path.basename(url)))[0] + '.geojson'
         vectorize.save_geojson(lines, fout)
         print('\nPerform visual inspection on %s' % fout)
