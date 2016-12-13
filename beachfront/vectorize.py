@@ -106,7 +106,7 @@ def filter_nodata_lines(lines, mask, dist=3):
                     newlines.append(line[startloc:loc])
                 startloc = loc + 1
     # add the last line
-    if (loc-startloc) > 1:
+    if len(lines) > 0 and (loc-startloc) > 1:
         newlines.append(line[startloc:])
     return newlines
 

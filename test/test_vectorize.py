@@ -145,6 +145,26 @@ class TestVectorize(unittest.TestCase):
                          [(0.8, 0.8), (0.8, 0.5), (0.8, 0.19999999999999996),
                          (0.5, 0.19999999999999996), (0.2, 0.19999999999999996)])
 
+    def test_potrace_empty_image(self):
+        """ Trace image that is empty """
+        geoimg = create_image(empty=True)
+        lines = vectorize.potrace(geoimg[0], geoloc=False)
+        self.assertEqual(len(lines), 0)
+        geoj = vectorize.to_geojson(lines)
+        self.assertEqual(len(geoj['features']), 0)
+
+    def test_potrace_only_nodata(self):
+        """ Trace image that has only nodata """
+        geoimg = create_image(empty=True)
+        arr = geoimg.read()
+        # make a nodata region
+        arr[0:5, 0:5] = geoimg[0].nodata()
+        geoimg[0].write(arr)
+        lines = vectorize.potrace(geoimg[0], geoloc=False)
+        self.assertEqual(len(lines), 0)
+        geoj = vectorize.to_geojson(lines)
+        self.assertEqual(len(geoj['features']), 0)
+
     def test_potrace_image(self):
         """ Trace landsat using an arbitrary cutoff """
         # get a complex test image (landsat)
