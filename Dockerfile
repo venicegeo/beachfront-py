@@ -27,6 +27,5 @@ RUN apt-get update; \
     easy_install pip; pip install wheel;
 
 RUN \
-    pip install cython; \
     pip install -r requirements.txt; \
     pip install -r requirements-dev.txt;
