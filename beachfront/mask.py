@@ -90,12 +90,11 @@ def create_mask_from_bitmask(geoimg, filename=''):
     cirrus = int('0011000000000000', 2)
 
     # calculate mask
-    arr = geoimg.read()
+    arr = geoimg.read().astype('int16')
     # it is a good data mask
     mask = (np.bitwise_and(arr, nodata) != nodata) & \
            (np.bitwise_and(arr, clouds) < clouds) & \
            (np.bitwise_and(arr, cirrus) < cirrus)
-    #mask = ((np.bitwise_and(arr, clouds) >= clouds) | (np.bitwise_and(arr, cirrus) >= cirrus))
 
     # create mask file
     maskimg = GeoImage.create_from(geoimg, filename=filename, dtype='uint8')
