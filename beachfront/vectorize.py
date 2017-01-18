@@ -100,14 +100,15 @@ def filter_nodata_lines(lines, mask, dist=3):
             # check if this is masked point
             locx = int(line[loc][1])
             locy = int(line[loc][0])
-            if mask[max(locx-dist, 0):min(locx+dist, mask.shape[0]),
-                    max(locy-dist, 0):min(locy+dist, mask.shape[0])].sum():
+            m = mask[max(locx-dist, 0):min(locx+dist, mask.shape[0]),
+                     max(locy-dist, 0):min(locy+dist, mask.shape[1])]
+            if m.sum():
                 if (loc-startloc) > 1:
                     newlines.append(line[startloc:loc])
                 startloc = loc + 1
-    # add the last line
-    if len(lines) > 0 and (loc-startloc) > 1:
-        newlines.append(line[startloc:])
+        # add the last segment
+        if (loc-startloc) > 1:
+            newlines.append(line[startloc:])
     return newlines
 
 
@@ -116,6 +117,7 @@ def potrace(geoimg, geoloc=False, turdsize=1.0, tolerance=0.2):
     # assuming single band
     arr = geoimg.read()
     mask = geoimg.nodata_mask()
+
     arr[mask == 1] = 0
     lines = potrace_array(arr, turdsize=turdsize, tolerance=tolerance)
 
