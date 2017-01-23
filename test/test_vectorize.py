@@ -31,7 +31,7 @@ class TestVectorize(unittest.TestCase):
     """ Test masking functions """
 
     def setUp(self):
-        Options.set_verbose(2)
+        #Options.set_verbose(2)
         numpy.set_printoptions(precision=2)
 
     def create_image_with_line(self):
