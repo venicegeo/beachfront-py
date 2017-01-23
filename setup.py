@@ -41,7 +41,7 @@ setup(
     description='library extracting coastline regions from raster data',
     author='Matthew Hanson (matthewhanson)',
     license='Apache 2.0',
-    url='https://github.com/venicegeo/bf-py',
+    url='https://github.com/venicegeo/beachfront-py',
     classifiers=[
         'Framework :: Pytest',
         'Topic :: Scientific/Engineering :: GIS',
