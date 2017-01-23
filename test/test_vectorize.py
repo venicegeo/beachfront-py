@@ -172,7 +172,7 @@ class TestVectorize(unittest.TestCase):
         geoimg = download_image(url)
         geoimg.set_nodata(0)
         lines = vectorize.potrace(geoimg[0] > 9500)
-        self.assertEqual(len(lines), 383)
+        self.assertEqual(len(lines), 89660)
         fout = os.path.splitext(os.path.join(os.path.dirname(__file__), os.path.basename(url)))[0] + '.geojson'
         vectorize.save_geojson(lines, fout)
         print('\nPerform visual inspection on %s' % fout)
