@@ -32,7 +32,7 @@ services:
 
   test:
     image: beachfront-py
-    command: bash -c 'nosetests -v -s;'
+    command: bash -c 'nosetests --with-coverage --cover-inclusive --cover-package beachfront -v -s;'
     working_dir: /work
     volumes:
       - '.:/work:rw'
