@@ -77,10 +77,10 @@ def save_geojson(lines, fout, source='imagery'):
     return fout
 
 
-def potrace_array(arr, turdsize=10.0, tolerance=0.2):
+def potrace_array(arr, minsize=10.0, tolerance=0.2):
     """ Trace numpy array using potrace """
     bmp = _potrace.Bitmap(arr)
-    polines = bmp.trace(turdsize=turdsize, turnpolicy=_potrace.TURNPOLICY_WHITE,
+    polines = bmp.trace(turdsize=minsize, turnpolicy=_potrace.TURNPOLICY_WHITE,
                         alphamax=0.0, opticurve=1.0, opttolerance=tolerance)
     lines = []
     for line in polines:
@@ -112,14 +112,14 @@ def filter_nodata_lines(lines, mask, dist=5):
     return newlines
 
 
-def potrace(geoimg, geoloc=False, turdsize=1.0, tolerance=0.2):
+def potrace(geoimg, geoloc=False, minsize=1.0, tolerance=0.2):
     """ Trace raster image using potrace and return geolocated or lat-lon coordinates """
     # assuming single band
     arr = geoimg.read()
     mask = geoimg.nodata_mask()
 
     arr[mask == 1] = 0
-    lines = potrace_array(arr, turdsize=turdsize, tolerance=tolerance)
+    lines = potrace_array(arr, minsize=minsize, tolerance=tolerance)
 
     if mask.max() > 0:
         lines = filter_nodata_lines(lines, mask)
