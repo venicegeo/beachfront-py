@@ -89,7 +89,7 @@ def potrace_array(arr, turdsize=10.0, tolerance=0.2):
     return lines
 
 
-def filter_nodata_lines(lines, mask, dist=3):
+def filter_nodata_lines(lines, mask, dist=5):
     """ Remove nodes within dist pixels of nodata regions, splitting lines as needed  """
     if mask.max() == 0:
         raise Exception('Empty mask!')
