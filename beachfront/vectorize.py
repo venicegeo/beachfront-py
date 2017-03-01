@@ -17,11 +17,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 import json
+import logging
 from osgeo import osr
 import potrace as _potrace
 from pyproj import Proj, transform
 import fiona
 from fiona.crs import from_epsg
+
+logger = logging.getLogger('beachfront')
 
 
 def lines_to_features(lines, source='imagery'):
@@ -77,11 +80,14 @@ def save_geojson(lines, fout, source='imagery'):
     return fout
 
 
-def potrace_array(arr, minsize=10.0, tolerance=0.2):
+def potrace_array(arr, minsize=10.0, tolerance=0.2, alphamax=0.0, opticurve=1):
     """ Trace numpy array using potrace """
+    # tolerance, alphamax, and opticurve are best kept at their defaults
     bmp = _potrace.Bitmap(arr)
+    logger.debug('potrace: minsize=%s, tolerance=%s, alphamax=%s, opticurve=%s' %
+                 (minsize, tolerance, alphamax, opticurve))
     polines = bmp.trace(turdsize=minsize, turnpolicy=_potrace.TURNPOLICY_WHITE,
-                        alphamax=0.0, opticurve=1.0, opttolerance=tolerance)
+                        alphamax=alphamax, opticurve=opticurve, opttolerance=tolerance)
     lines = []
     for line in polines:
         lines.append(line.tesselate().tolist())
@@ -90,10 +96,16 @@ def potrace_array(arr, minsize=10.0, tolerance=0.2):
 
 
 def filter_nodata_lines(lines, mask, dist=5):
-    """ Remove nodes within dist pixels of nodata regions, splitting lines as needed  """
-    if mask.max() == 0:
-        raise Exception('Empty mask!')
+    """ Remove nodes within dist pixels of nodata regions or scene edges, splitting lines as needed  """
+    #if mask.max() == 0:
+    #    raise Exception('Empty mask!')
     newlines = []
+    logger.debug('%s lines before filtering and splitting' % len(lines))
+    xsize = mask.shape[0]
+    ysize = mask.shape[1]
+    minloc = 2
+    xmaxloc = xsize - minloc - 1
+    ymaxloc = ysize - minloc - 1
     for line in lines:
         startloc = 0
         for loc in range(0, len(line)):
@@ -102,27 +114,27 @@ def filter_nodata_lines(lines, mask, dist=5):
             locy = int(line[loc][0])
             m = mask[max(locx-dist, 0):min(locx+dist, mask.shape[0]),
                      max(locy-dist, 0):min(locy+dist, mask.shape[1])]
-            if m.sum():
+            if m.sum() or (locx < minloc) or (locy < minloc) or (locx > xmaxloc) or (locy > ymaxloc):
                 if (loc-startloc) > 1:
                     newlines.append(line[startloc:loc])
                 startloc = loc + 1
         # add the last segment
         if (loc-startloc) > 1:
             newlines.append(line[startloc:])
+    logger.debug('%s lines after filtering and splitting' % len(newlines))
     return newlines
 
 
-def potrace(geoimg, geoloc=False, minsize=1.0, tolerance=0.2):
+def potrace(geoimg, geoloc=False, **kwargs):
     """ Trace raster image using potrace and return geolocated or lat-lon coordinates """
     # assuming single band
     arr = geoimg.read()
     mask = geoimg.nodata_mask()
 
     arr[mask == 1] = 0
-    lines = potrace_array(arr, minsize=minsize, tolerance=tolerance)
+    lines = potrace_array(arr, **kwargs)
 
-    if mask.max() > 0:
-        lines = filter_nodata_lines(lines, mask)
+    lines = filter_nodata_lines(lines, mask)
 
     if not geoloc:
         srs = osr.SpatialReference(geoimg.srs()).ExportToProj4()
