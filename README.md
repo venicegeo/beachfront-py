@@ -3,11 +3,23 @@
 beachfront-py (or just beachfront) is a library of functions used for the creation of vector shorelines automatically from imagery.
 
 ## Installation
-There are several system libraries as well pip installable modules. Install scripts are provided in the install directory. Call them from this directory:
+There are several system libraries required should be installed before installing beachfront-py. On a debian system:
 
-    $ install/centos.sh
+    $ apt-get install -y python-setuptools python-numpy python-dev libgdal-dev python-gdal swig git g++ libagg-dev libpotrace-dev
 
-The script will install all system and python depdencies, and then run all tests in test/.
+Then, from this directory (containg this repo) install the Python requirements and beachfront-py. The use of a virtual environment is recommended.
+
+    $ virtualenv venv
+    $ source venv/bin/activate
+    (venv) $ pip install -r requirements.txt
+    (venv) $ pip install .
+
+### Docker
+Docker may be used to build a system working with beachfront-py. Use docker-compose to build the image and run tests:
+
+    $ docker-compose build
+
+    $ docker-compose run test
 
 
 ## Modules
