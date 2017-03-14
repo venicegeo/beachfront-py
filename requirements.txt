@@ -2,5 +2,5 @@ git+https://github.com/gipit/gippy.git@develop
 git+https://github.com/flupke/pypotrace.git@master
 pyproj==1.9.5.1
 requests==2.11.1
-fiona==1.6.3
+fiona==1.7.4
 six==1.10.0
