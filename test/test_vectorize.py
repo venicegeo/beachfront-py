@@ -22,16 +22,19 @@ import os
 import glob
 import json
 import numpy
-from gippy import Options
+import logging
 from beachfront import vectorize
 from .utils import create_image, download_image
+
+
+logger = logging.getLogger('beachfront')
+# logger.addHandler(logging.StreamHandler())
 
 
 class TestVectorize(unittest.TestCase):
     """ Test masking functions """
 
     def setUp(self):
-        #Options.set_verbose(2)
         numpy.set_printoptions(precision=2)
 
     def create_image_with_line(self):
@@ -53,10 +56,10 @@ class TestVectorize(unittest.TestCase):
 
     def create_image_with_box(self):
         """ Create image with box in middle """
-        geoimg = create_image()
+        geoimg = create_image(xsz=20, ysz=20)
         arr = numpy.zeros((geoimg.xsize(), geoimg.ysize()), dtype='uint8')
         # arr[25:75, 25:75] = 1
-        arr[2:8, 2:8] = 1
+        arr[4:16, 4:16] = 1
         geoimg[0].write(arr)
         self.truth_coords = [
             [0.2, 0.8], [0.5, 0.8], [0.8, 0.8], [0.8, 0.5], [0.8, 0.19999999999999996],
@@ -117,16 +120,16 @@ class TestVectorize(unittest.TestCase):
         for c in lines[0]:
             self.assertTrue(c in self.truth_coords)
 
-    def test_potrace_turdsize(self):
-        """ Trace line with turdsize smaller and larger than box """
+    def test_potrace_minsize(self):
+        """ Trace line with minsize smaller and larger than box """
         geoimg = self.create_image_with_box()
 
-        # check that turdsize did not filter out box
-        lines = vectorize.potrace(geoimg[0], turdsize=30, geoloc=False)
+        # check that minsize did not filter out box
+        lines = vectorize.potrace(geoimg[0], minsize=100, geoloc=False)
         self.assertEqual(len(lines[0]), len(self.truth_coords))
 
-        # check that turdsize does filter out box
-        lines = vectorize.potrace(geoimg[0], turdsize=50)
+        # check that minsize does filter out box
+        lines = vectorize.potrace(geoimg[0], minsize=200)
         self.assertEqual(len(lines), 0)
 
     def test_potrace_nodata(self):
@@ -134,16 +137,16 @@ class TestVectorize(unittest.TestCase):
         geoimg = self.create_image_with_box()
         arr = geoimg.read()
         # make a nodata region
-        arr[0:5, 0:5] = geoimg[0].nodata()
+        arr[0:10, 0:10] = geoimg[0].nodata()
         geoimg[0].write(arr)
         lines = vectorize.potrace(geoimg[0], geoloc=False)
 
         self.assertEqual(len(lines), 1)
 
-        self.assertEqual(len(lines[0]), 5)
+        self.assertEqual(len(lines[0]), 7)
         self.assertEqual(lines[0],
-                         [(0.8, 0.8), (0.8, 0.5), (0.8, 0.19999999999999996),
-                         (0.5, 0.19999999999999996), (0.2, 0.19999999999999996)])
+                         [(0.65, 0.8), (0.8, 0.8), (0.8, 0.5), (0.8, 0.19999999999999996),
+                         (0.5, 0.19999999999999996), (0.2, 0.19999999999999996), (0.2, 0.35)])
 
     def test_potrace_empty_image(self):
         """ Trace image that is empty """
@@ -172,7 +175,7 @@ class TestVectorize(unittest.TestCase):
         geoimg = download_image(url)
         geoimg.set_nodata(0)
         lines = vectorize.potrace(geoimg[0] > 9500)
-        self.assertEqual(len(lines), 89660)
+        self.assertEqual(len(lines), 16551)
         fout = os.path.splitext(os.path.join(os.path.dirname(__file__), os.path.basename(url)))[0] + '.geojson'
         vectorize.save_geojson(lines, fout)
         print('\nPerform visual inspection on %s' % fout)

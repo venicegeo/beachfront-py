@@ -95,7 +95,7 @@ def potrace_array(arr, minsize=10.0, tolerance=0.2, alphamax=0.0, opticurve=1):
     return lines
 
 
-def filter_nodata_lines(lines, mask, dist=5):
+def filter_nodata_lines(lines, mask, dist=3):
     """ Remove nodes within dist pixels of nodata regions or scene edges, splitting lines as needed  """
     #if mask.max() == 0:
     #    raise Exception('Empty mask!')
@@ -133,7 +133,6 @@ def potrace(geoimg, geoloc=False, **kwargs):
 
     arr[mask == 1] = 0
     lines = potrace_array(arr, **kwargs)
-
     lines = filter_nodata_lines(lines, mask)
 
     if not geoloc:
