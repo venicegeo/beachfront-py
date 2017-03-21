@@ -16,7 +16,7 @@ GNU General Public License for more details.
 """
 import json
 import logging
-from osgeo import osr
+from osgeo import osr, ogr
 import potrace as _potrace
 from pyproj import Proj, transform
 import fiona
@@ -150,3 +150,24 @@ def potrace(geoimg, geoloc=False, **kwargs):
         newlines.append(newline)
 
     return newlines
+
+
+def simplify(inJson, tolerance=0.00035):
+    """ Simplify GeoJSON vector """
+    # tolerance is set using GeoJSON map units. Expects decimal degrees, but should work with anything
+    if tolerance is None:
+        return inJson
+    driver = ogr.GetDriverByName('GeoJSON')
+    vs = driver.Open(inJson, 1) # 1 opens the file in read/write mode, 0 for read-only mode
+    layer = vs.GetLayer()
+    feat = layer.GetNextFeature()
+    while feat is not None:
+        geo = feat.geometry()
+        simple = geo.Simplify(tolerance)
+        feat.SetGeometry(simple)
+        layer.SetFeature(feat)
+        feat = layer.GetNextFeature()
+    layer = None
+    vs.Destroy()
+    return inJson
+
