@@ -129,6 +129,8 @@ def filter_nodata_lines(lines, mask, dist=3):
 
 def close_line_strings(lines, dist=5.0):
     """ Close line strings (1st pt = last pt) if within dist (in pixels) """
+    if dist == 0:
+        return lines
     dists = []
     for line in lines:
         xdist = line[-1][0] - line[0][0]
