@@ -89,6 +89,18 @@ save_shapefile(lines, fout='my.shp')
 ```
 
 
+### Logger
+
+The logger module creates a logger streamed to stdout that supports additional keywords for audit logging for the Beachfront project. The logger module will automatically be initialized and used whenever any part of beachfront-py is imported. The quiet the logger, use the mute_logger function.
+
+```
+from beachfront.vectorize import potrace
+from beachfront.logger import mute_logger
+
+mute_logger()
+```
+
+
 ## Development
 
 ### Branches
