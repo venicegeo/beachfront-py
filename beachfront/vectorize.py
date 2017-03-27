@@ -179,7 +179,6 @@ def simplify(filename, tolerance=0.00035):
     logger.info('Updating file %s with simplified geometries' % filename, action='Updating file',
                 actee=filename, actor=__name__)
     vs = ogr.Open(filename, 1)  # 1 opens the file in read/write mode, 0 for read-only mode
-    from nose.tools import set_trace; set_trace()
     layer = vs.GetLayer()
     feat = layer.GetNextFeature()
     while feat is not None:
