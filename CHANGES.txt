@@ -1,3 +1,4 @@
 v0.1.1:
-- close_line_strings function added
+- vectorize.close_line_strings function added
 - audit logging
+- vectorize.simplify function added
