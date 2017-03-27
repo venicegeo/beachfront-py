@@ -1,0 +1,3 @@
+v0.1.1:
+- close_line_strings function added
+- audit logging
