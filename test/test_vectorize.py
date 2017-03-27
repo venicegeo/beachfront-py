@@ -35,6 +35,8 @@ logger = logging.getLogger(__name__)
 class TestVectorize(unittest.TestCase):
     """ Test masking functions """
 
+    test_url = 'http://landsat-pds.s3.amazonaws.com/L8/139/045/LC81390452014295LGN00/LC81390452014295LGN00_B3.TIF'
+
     def setUp(self):
         numpy.set_printoptions(precision=2)
         init_logger(muted=True)
@@ -173,21 +175,19 @@ class TestVectorize(unittest.TestCase):
     def test_potrace_image(self):
         """ Trace landsat using an arbitrary cutoff """
         # get a complex test image (landsat)
-        url = 'http://landsat-pds.s3.amazonaws.com/L8/139/045/LC81390452014295LGN00/LC81390452014295LGN00_B3.TIF'
-        geoimg = download_image(url)
+        geoimg = download_image(self.test_url)
         geoimg.set_nodata(0)
-        lines = vectorize.potrace(geoimg[0] > 9500)
+        lines = vectorize.potrace(geoimg[0] > 9500, close=0)
         self.assertEqual(len(lines), 16551)
-        fout = os.path.splitext(os.path.join(os.path.dirname(__file__), os.path.basename(url)))[0] + '.geojson'
+        fout = os.path.splitext(os.path.join(os.path.dirname(__file__), os.path.basename(self.test_url)))[0] + '.geojson'
         vectorize.save_geojson(lines, fout)
         print('\nPerform visual inspection on %s' % fout)
 
     def test_simplify(self):
         """ Simplify GeoJSON geometries """
-        url = 'http://landsat-pds.s3.amazonaws.com/L8/139/045/LC81390452014295LGN00/LC81390452014295LGN00_B3.TIF'
-        geoimg = download_image(url)
+        geoimg = download_image(self.test_url)
         geoimg.set_nodata(0)
-        lines = vectorize.potrace(geoimg[0] > 9500)
+        lines = vectorize.potrace(geoimg[0] > 9500, close=0)
         fout = os.path.join(os.path.dirname(__file__), 'test.geojson')
         vectorize.save_geojson(lines, fout)
 
@@ -205,3 +205,18 @@ class TestVectorize(unittest.TestCase):
         layer = df.GetLayer()
         geom = json.loads(layer.GetNextFeature().ExportToJson())
         self.assertEqual(len(geom['geometry']['coordinates']), 22)
+
+    def test_close_line_strings(self):
+        """ Close line strings """
+        geoimg = self.create_image_with_box()
+        lines = vectorize.potrace(geoimg[0], geoloc=True, close=6)
+        self.assertEqual(len(lines[0]), 9)
+
+    def test_close_line_strings_real(self):
+        """ Close line strings """
+        geoimg = download_image(self.test_url)
+        geoimg.set_nodata(0)
+        lines = vectorize.potrace(geoimg[0] > 9500, close=5)
+        fout = os.path.splitext(os.path.join(os.path.dirname(__file__), os.path.basename(self.test_url)))[0] + '_closed.geojson'
+        vectorize.save_geojson(lines, fout)
+        print('\nPerform visual inspection on %s' % fout)

@@ -15,6 +15,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 """
 import json
+import numpy
 from osgeo import osr, ogr
 import potrace as _potrace
 from pyproj import Proj, transform
@@ -126,7 +127,22 @@ def filter_nodata_lines(lines, mask, dist=3):
     return newlines
 
 
-def potrace(geoimg, geoloc=False, **kwargs):
+def close_line_strings(lines, dist=5.0):
+    """ Close line strings (1st pt = last pt) if within dist (in pixels) """
+    dists = []
+    for line in lines:
+        xdist = line[-1][0] - line[0][0]
+        ydist = line[-1][1] - line[0][1]
+        d = numpy.sqrt(xdist**2 + ydist**2)
+        dists.append(d)
+        if d <= dist:
+            line.append(line[0])
+    if len(dists) > 0:
+        logger.debug('Endpoint distances: min=%s, max=%s, mean=%s' % (min(dists), max(dists), numpy.mean(dists)))
+    return lines
+
+
+def potrace(geoimg, geoloc=False, close=5.0, **kwargs):
     """ Trace raster image using potrace and return geolocated or lat-lon coordinates """
     # assuming single band
     arr = geoimg.read()
@@ -135,6 +151,7 @@ def potrace(geoimg, geoloc=False, **kwargs):
     arr[mask == 1] = 0
     lines = potrace_array(arr, **kwargs)
     lines = filter_nodata_lines(lines, mask)
+    lines = close_line_strings(lines, dist=close)
 
     if not geoloc:
         srs = osr.SpatialReference(geoimg.srs()).ExportToProj4()
@@ -151,7 +168,6 @@ def potrace(geoimg, geoloc=False, **kwargs):
                 pt = transform(projin, projout, pt[0], pt[1])
             newline.append(pt)
         newlines.append(newline)
-
     return newlines
 
 
@@ -163,6 +179,7 @@ def simplify(filename, tolerance=0.00035):
     logger.info('Updating file %s with simplified geometries' % filename, action='Updating file',
                 actee=filename, actor=__name__)
     vs = ogr.Open(filename, 1)  # 1 opens the file in read/write mode, 0 for read-only mode
+    from nose.tools import set_trace; set_trace()
     layer = vs.GetLayer()
     feat = layer.GetNextFeature()
     while feat is not None:
