@@ -15,11 +15,17 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 """
 import numpy as np
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 
 def otsu_threshold(georaster):
     """ Use Otsu's method to caluclate optimal threshold ignoring nodata values """
     nbins = 500
+    logger.info('Reading from file %s' % georaster.filename(), action='Read file',
+                actee=georaster.filename(), actor=__name__)
     hist = georaster.histogram(bins=nbins).astype(float)
 
     stats = georaster.stats()

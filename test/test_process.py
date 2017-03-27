@@ -17,14 +17,18 @@ GNU General Public License for more details.
 from __future__ import print_function
 import unittest
 import os
-from gippy import Options
-from gippy import GeoImage
 from beachfront import process
+from beachfront.logger import init_logger
 from .utils import create_image, download_image
 
 
 class TestProcess(unittest.TestCase):
     """ Test masking functions """
+
+    @classmethod
+    def setUpClass(cls):
+        """ Initialize logging """
+        init_logger(muted=True)
 
     def create_bimodal_image(self):
         """ Create image with a bimodal distribution """

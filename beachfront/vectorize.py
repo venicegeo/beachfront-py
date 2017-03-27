@@ -15,14 +15,15 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 """
 import json
-import logging
 from osgeo import osr, ogr
 import potrace as _potrace
 from pyproj import Proj, transform
 import fiona
 from fiona.crs import from_epsg
+import logging
 
-logger = logging.getLogger('beachfront')
+
+logger = logging.getLogger(__name__)
 
 
 def lines_to_features(lines, source='imagery'):
@@ -58,6 +59,7 @@ def save_shapefile(lines, fout, source='imagery'):
     features = lines_to_features(lines, source=source)
     # TODO - get epsg from geojson
     crs = from_epsg(4326)
+    logger.info('Saving to file %s' % fout, action='Save file', actee=fout, actor=__name__)
     with fiona.open(fout, 'w', 'ESRI Shapefile', schema, crs=crs) as output:
         output.writerecords(features)
 
@@ -73,6 +75,7 @@ def to_geojson(lines, source='imagery'):
 def save_geojson(lines, fout, source='imagery'):
     """ Save lines as GeoJSON file """
     geojson = to_geojson(lines, source=source)
+    logger.info('Saving to file %s' % fout, action='Save file', actee=fout, actor=__name__)
     with open(fout, 'w') as f:
         f.write(json.dumps(geojson))
     return fout
@@ -95,7 +98,7 @@ def potrace_array(arr, minsize=10.0, tolerance=0.2, alphamax=0.0, opticurve=1):
 
 def filter_nodata_lines(lines, mask, dist=3):
     """ Remove nodes within dist pixels of nodata regions or scene edges, splitting lines as needed  """
-    #if mask.max() == 0:
+    # if mask.max() == 0:
     #    raise Exception('Empty mask!')
     newlines = []
     logger.debug('%s lines before filtering and splitting' % len(lines))
@@ -158,7 +161,7 @@ def simplify(inJson, tolerance=0.00035):
     if tolerance is None:
         return inJson
     driver = ogr.GetDriverByName('GeoJSON')
-    vs = driver.Open(inJson, 1) # 1 opens the file in read/write mode, 0 for read-only mode
+    vs = driver.Open(inJson, 1)  # 1 opens the file in read/write mode, 0 for read-only mode
     layer = vs.GetLayer()
     feat = layer.GetNextFeature()
     while feat is not None:
@@ -170,4 +173,3 @@ def simplify(inJson, tolerance=0.00035):
     layer = None
     vs.Destroy()
     return inJson
-

@@ -21,10 +21,15 @@ from gippy import GeoImage, GeoVector
 import gippy.algorithms as alg
 import json
 import numpy as np
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 
 def open_vector(filename, layer=''):
     """ Fetch wfs features within bounding box """
+    logger.info('Opening %s as vector file' % filename, action='Open file', actee=filename, actor=__name__)
     ds = ogr.Open(filename)
     if layer == '':
         layer = ds.GetLayer(0)
@@ -58,9 +63,12 @@ def get_features(layer, bbox=None, union=False, filename=''):
     features = get_features_as_geojson(layer, bbox=bbox, union=union)
     if filename == '':
         f, filename = tempfile.mkstemp(suffix='.geojson')
+        logger.info('Saving JSON as vector file', action='Save file', actee=filename, actor=__name__)
         os.write(f, json.dumps(features))
         os.close(f)
     else:
+        logger.info('Saving JSON as vector file', action='Save file', actee=filename, actor=__name__)
+        logger.info('Writing GeoJSON to file %s' % filename)
         with open(filename, 'w') as f:
             f.write(json.dumps(features))
     # create GeoVector
@@ -75,6 +83,7 @@ def mask_with_vector(geoimg, vector, filename=''):
     geovec = get_features(layer, bbox=[ext.x0(), ext.y0(), ext.x1(), ext.y1()], union=True)
 
     res = geoimg.resolution()
+    logger.info('Saving to file %s' % filename, action='Save file', actee=filename, actor=__name__)
     imgout = alg.cookie_cutter([geoimg], filename=filename, feature=geovec[0],
                                proj=geoimg.srs(), xres=res.x(), yres=res.y())
     return imgout
@@ -95,6 +104,7 @@ def create_mask_from_bitmask(geoimg, filename=''):
            (np.bitwise_and(arr, cirrus) < cirrus)
 
     # create mask file
+    logger.info('Saving to file %s' % filename, action='Save file', actee=filename, actor=__name__)
     maskimg = GeoImage.create_from(geoimg, filename=filename, dtype='uint8')
     maskimg.set_nodata(0)
     maskimg[0].write(mask.astype('uint8'))

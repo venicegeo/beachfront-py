@@ -19,6 +19,7 @@ import os
 from gippy import Options
 from beachfront import mask
 from .utils import download_image
+from beachfront.logger import init_logger
 
 
 class TestMask(unittest.TestCase):
@@ -32,6 +33,11 @@ class TestMask(unittest.TestCase):
 
     #bbox = [-78.5964604299, -11.1797039494, -76.5056457676, -9.06874079313]
     bbox = [-65.1126692276, 44.929454947, -62.0891890425, 47.100321387]
+
+    @classmethod
+    def setUpClass(cls):
+        """ Initialize logging """
+        init_logger(muted=True)
 
     def setUp(self):
         Options.set_verbose(2)
@@ -60,7 +66,7 @@ class TestMask(unittest.TestCase):
         imgout = mask.mask_with_vector(geoimg, (self.vfilename, ''))
         self.assertEqual(imgout.nbands(), 1)
 
-    def test_mask(self):
+    def _test_mask(self):
         """ Create mask image from bitwise mask """
         bqaimg = download_image(self.qimgurl)
         maskimg = mask.create_mask_from_bitmask(bqaimg)

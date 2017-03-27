@@ -24,11 +24,11 @@ import json
 import numpy
 import logging
 from beachfront import vectorize
+from beachfront.logger import init_logger
 from .utils import create_image, download_image
 
 
-logger = logging.getLogger('beachfront')
-# logger.addHandler(logging.StreamHandler())
+logger = logging.getLogger(__name__)
 
 
 class TestVectorize(unittest.TestCase):
@@ -36,6 +36,7 @@ class TestVectorize(unittest.TestCase):
 
     def setUp(self):
         numpy.set_printoptions(precision=2)
+        init_logger(muted=True)
 
     def create_image_with_line(self):
         """ Create image with small line in middle """
