@@ -22,6 +22,7 @@ import os
 import glob
 import json
 import numpy
+from osgeo import ogr
 import logging
 from beachfront import vectorize
 from beachfront.logger import init_logger
@@ -180,3 +181,27 @@ class TestVectorize(unittest.TestCase):
         fout = os.path.splitext(os.path.join(os.path.dirname(__file__), os.path.basename(url)))[0] + '.geojson'
         vectorize.save_geojson(lines, fout)
         print('\nPerform visual inspection on %s' % fout)
+
+    def test_simplify(self):
+        """ Simplify GeoJSON geometries """
+        url = 'http://landsat-pds.s3.amazonaws.com/L8/139/045/LC81390452014295LGN00/LC81390452014295LGN00_B3.TIF'
+        geoimg = download_image(url)
+        geoimg.set_nodata(0)
+        lines = vectorize.potrace(geoimg[0] > 9500)
+        fout = os.path.join(os.path.dirname(__file__), 'test.geojson')
+        vectorize.save_geojson(lines, fout)
+
+        # check file
+        df = ogr.Open(fout)
+        layer = df.GetLayer()
+        self.assertEqual(layer.GetFeatureCount(), len(lines))
+        geom = json.loads(layer.GetNextFeature().ExportToJson())
+        self.assertEqual(len(geom['geometry']['coordinates']), len(lines[0]))
+        df = None
+
+        # simplify and check file
+        vectorize.simplify(fout, tolerance=0.001)
+        df = ogr.Open(fout)
+        layer = df.GetLayer()
+        geom = json.loads(layer.GetNextFeature().ExportToJson())
+        self.assertEqual(len(geom['geometry']['coordinates']), 22)

@@ -155,13 +155,14 @@ def potrace(geoimg, geoloc=False, **kwargs):
     return newlines
 
 
-def simplify(inJson, tolerance=0.00035):
+def simplify(filename, tolerance=0.00035):
     """ Simplify GeoJSON vector """
     # tolerance is set using GeoJSON map units. Expects decimal degrees, but should work with anything
     if tolerance is None:
-        return inJson
-    driver = ogr.GetDriverByName('GeoJSON')
-    vs = driver.Open(inJson, 1)  # 1 opens the file in read/write mode, 0 for read-only mode
+        return filename
+    logger.info('Updating file %s with simplified geometries' % filename, action='Updating file',
+                actee=filename, actor=__name__)
+    vs = ogr.Open(filename, 1)  # 1 opens the file in read/write mode, 0 for read-only mode
     layer = vs.GetLayer()
     feat = layer.GetNextFeature()
     while feat is not None:
@@ -172,4 +173,3 @@ def simplify(inJson, tolerance=0.00035):
         feat = layer.GetNextFeature()
     layer = None
     vs.Destroy()
-    return inJson
