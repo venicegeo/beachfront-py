@@ -23,8 +23,8 @@ Then, from this directory (contaning this repo) install the Python requirements 
 
 The masking module is used for masking images with vectors (as in the case of a global buffered shoreline), or with a raster mask (such as one derived for clouds in the Landsat BQA band). The two main functions
 
-    - mask_with_vector(geoimg, vector, filename=''): Mask a GeoImage with a vector
-    - create_mask_from_bitmask(geoimg, filename=''): Creates a binary mask from a Landsat quality band to mask out medium and high confidence clouds
+- mask_with_vector(geoimg, vector, filename=''): Mask a GeoImage with a vector
+- create_mask_from_bitmask(geoimg, filename=''): Creates a binary mask from a Landsat quality band to mask out medium and high confidence clouds
 
 
 ```
@@ -43,7 +43,7 @@ maskimg = mask.create_mask_from_bitmask(geoimg, filename='cloud-mask.tif')
 
 The process module currently contains one function, calculating the otsu threshold of a raster image, but future general processing functions may be added in the future. 
 
-    - otsu_threshold(georaster): Calculates the optimal threshold of an image with a bimodal histogram
+- otsu_threshold(georaster): Calculates the optimal threshold of an image with a bimodal histogram
 
 ```
 import gippy
@@ -66,14 +66,14 @@ print geoimg[0].stats()
 
 The vectorize module supplies functions for tracing a binary imagery that may have nodata values, and converting to geo-located or lat-lon coordinates. The main way to use the vectorize module is on a Gippy GeoRaster, which is a band of a GeoImage.  The potrace() function will use potrace to trace the polygon (aka white, foreground) as a linestring, and convert it to lat-lon coordinates, or geo-located coordinates if desired.
 
-    - potrace(geoimg, geoloc=False, close=5.0, minsize=10.0): Traces linestrings along boundaries in a binary image using the Potrace library. Returns array of line coordinates.
-    - save_geojson(lines, fout) and save_shapefile(lines, fout): Save the lines to a file. Note that the save_shapefile currently assumes the lines are in lat-lon.
+- potrace(geoimg, geoloc=False, close=5.0, minsize=10.0): Traces linestrings along boundaries in a binary image using the Potrace library. Returns array of line coordinates.
+- save_geojson(lines, fout) and save_shapefile(lines, fout): Save the lines to a file. Note that the save_shapefile currently assumes the lines are in lat-lon.
 
 #### trace parameters
 
-    - geoloc (False): If True, then the coordinates returned will be geo-located in the same projection as the input raster. Otherwise the returned coordinates will be in lat-lon (recommended).
-    - close (5): Linestrings will be closed if their two endpoints are within this number of pixels. The default is 5, and setting it to 0 will turn it off.
-    - minsize (10): The minimum size a linestring should be before being filtered out. This corresponds to the potrace parameter 'turdsize', and is not the length of the line but rather some measure of the extent of it. The default of 10 will not filter out many lines. For Landsat, a value of 10000 works well and removing false coasts, but may also remove islands or smaller incomplete shorelines.
+- geoloc (False): If True, then the coordinates returned will be geo-located in the same projection as the input raster. Otherwise the returned coordinates will be in lat-lon (recommended).
+- close (5): Linestrings will be closed if their two endpoints are within this number of pixels. The default is 5, and setting it to 0 will turn it off.
+- minsize (10): The minimum size a linestring should be before being filtered out. This corresponds to the potrace parameter 'turdsize', and is not the length of the line but rather some measure of the extent of it. The default of 10 will not filter out many lines. For Landsat, a value of 10000 works well and removing false coasts, but may also remove islands or smaller incomplete shorelines.
 
 
 ```
