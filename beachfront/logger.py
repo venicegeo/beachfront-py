@@ -45,7 +45,6 @@ def init_logger(logLevel=logging.DEBUG, muted=False):
 
     # overall logging level
     logger.setLevel(1)
-    logger.debug('Initialized logger')
     return logger
 
 
