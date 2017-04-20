@@ -63,7 +63,7 @@ class AuditableLogger(logging.Logger):
         if action:
             sd_params.append('action="{}"'.format(action))
         if actee:
-            sd_params.append('actee="{}"'.format(actee))
+            sd_params.append('actee="{}"'.format(os.path.abspath(actee)))
 
         sd_element = ''
         if sd_params:
