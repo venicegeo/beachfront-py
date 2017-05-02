@@ -45,7 +45,6 @@ def init_logger(logLevel=logging.DEBUG, muted=False):
 
     # overall logging level
     logger.setLevel(1)
-    logger.debug('Initialized logger')
     return logger
 
 
@@ -63,7 +62,7 @@ class AuditableLogger(logging.Logger):
         if action:
             sd_params.append('action="{}"'.format(action))
         if actee:
-            sd_params.append('actee="{}"'.format(actee))
+            sd_params.append('actee="{}"'.format(os.path.abspath(actee)))
 
         sd_element = ''
         if sd_params:
