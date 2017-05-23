@@ -143,14 +143,12 @@ class TestVectorize(unittest.TestCase):
         # make a nodata region
         arr[0:10, 0:10] = geoimg[0].nodata()
         geoimg[0].write(arr)
-        lines = vectorize.potrace(geoimg[0], geoloc=False)
-
+        lines = vectorize.potrace(geoimg[0], geoloc=True)
         self.assertEqual(len(lines), 1)
-
         self.assertEqual(len(lines[0]), 7)
         self.assertEqual(lines[0],
-                         [(0.65, 0.8), (0.8, 0.8), (0.8, 0.5), (0.8, 0.19999999999999996),
-                         (0.5, 0.19999999999999996), (0.2, 0.19999999999999996), (0.2, 0.35)])
+                         [[0.65, 0.8], [0.8, 0.8], [0.8, 0.5], [0.8, 0.19999999999999996],
+                         [0.5, 0.19999999999999996], [0.2, 0.19999999999999996], [0.2, 0.35]])
 
     def test_potrace_empty_image(self):
         """ Trace image that is empty """
@@ -213,7 +211,7 @@ class TestVectorize(unittest.TestCase):
         self.assertEqual(len(lines[0]), 9)
 
     def test_close_line_strings_real(self):
-        """ Close line strings """
+        """ Close real line strings """
         geoimg = download_image(self.test_url)
         geoimg.set_nodata(0)
         lines = vectorize.potrace(geoimg[0] > 9500, close=5)

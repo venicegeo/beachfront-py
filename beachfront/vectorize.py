@@ -144,6 +144,31 @@ def close_line_strings(lines, dist=5.0):
     return lines
 
 
+def geolocate(geoimg, lines):
+    """ Geo-locate these lines, splitting lines crossing the 180th meridian """
+    srs = osr.SpatialReference(geoimg.srs()).ExportToProj4()
+    projin = Proj(srs)
+    projout = Proj(init='epsg:4326')
+    newlines = []
+    for line in lines:
+        lastpt = transform(projin, projout, line[0][0], line[0][1])
+        newline = [lastpt]
+        for point in line[1:]:
+            pt = transform(projin, projout, point[0], point[1])
+            # check if crosses the antimeridian
+            if ((lastpt.x() * pt.x()) < 0) and (abs(pt.x()) > 175):
+                # cap off this line
+                newline.append([180.0 * numpy.sign(lastpt[0]), lastpt[1]])
+                newlines.append(newline)
+                # create new next line
+                newline = [[180.0 * numpy.sign(pt[0]), pt[1]]]
+            newline.append(pt)
+            lastpt = pt
+        newlines.append(newline)
+        # check if needs to be split
+    return newlines
+
+
 def potrace(geoimg, geoloc=False, close=5.0, **kwargs):
     """ Trace raster image using potrace and return geolocated or lat-lon coordinates """
     # assuming single band
@@ -155,21 +180,17 @@ def potrace(geoimg, geoloc=False, close=5.0, **kwargs):
     lines = filter_nodata_lines(lines, mask)
     lines = close_line_strings(lines, dist=close)
 
-    if not geoloc:
-        srs = osr.SpatialReference(geoimg.srs()).ExportToProj4()
-        projin = Proj(srs)
-        projout = Proj(init='epsg:4326')
     newlines = []
     for line in lines:
         newline = []
         for point in line:
             pt = geoimg.geoloc(point[0], point[1])
-            pt = [pt.x(), pt.y()]
-            if not geoloc:
-                # convert to lat-lon
-                pt = transform(projin, projout, pt[0], pt[1])
-            newline.append(pt)
+            newline.append([pt.x(), pt.y()])
         newlines.append(newline)
+
+    if not geoloc:
+        newlines = geolocate(geoimg, newlines)
+
     return newlines
 
 
