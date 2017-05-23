@@ -156,7 +156,7 @@ def geolocate(geoimg, lines):
         for point in line[1:]:
             pt = transform(projin, projout, point[0], point[1])
             # check if crosses the antimeridian
-            if ((lastpt.x() * pt.x()) < 0) and (abs(pt.x()) > 175):
+            if (abs(pt[0]) > 175) and ((lastpt[0] * pt[0]) < 0):
                 # cap off this line
                 newline.append([180.0 * numpy.sign(lastpt[0]), lastpt[1]])
                 newlines.append(newline)
@@ -165,7 +165,6 @@ def geolocate(geoimg, lines):
             newline.append(pt)
             lastpt = pt
         newlines.append(newline)
-        # check if needs to be split
     return newlines
 
 
