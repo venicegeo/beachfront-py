@@ -157,11 +157,21 @@ def geolocate(geoimg, lines):
             pt = transform(projin, projout, point[0], point[1])
             # check if crosses the antimeridian
             if (abs(pt[0]) > 175) and ((lastpt[0] * pt[0]) < 0):
+                xmin = max((lastpt[0], pt[0]))
+                xmax = 360 + min((lastpt[0], pt[0]))
+                # calculate crossing latitude
+                ydist = max([pt[1], lastpt[1]]) - min([pt[1], lastpt[1]])
+                m = ydist / (xmax-xmin)
+                if pt[0] > lastpt[0]:
+                    b = pt[1] - m * pt[0]
+                else:
+                    b = lastpt[1] - m * lastpt[0]
+                latcross = m * 180.0 + b
                 # cap off this line
-                newline.append([180.0 * numpy.sign(lastpt[0]), lastpt[1]])
+                newline.append([180.0 * numpy.sign(lastpt[0]), latcross])
                 newlines.append(newline)
                 # create new next line
-                newline = [[180.0 * numpy.sign(pt[0]), pt[1]]]
+                newline = [[180.0 * numpy.sign(pt[0]), latcross]]
             newline.append(pt)
             lastpt = pt
         newlines.append(newline)
