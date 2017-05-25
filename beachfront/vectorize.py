@@ -144,17 +144,14 @@ def close_line_strings(lines, dist=5.0):
     return lines
 
 
-def geolocate(geoimg, lines):
-    """ Geo-locate these lines, splitting lines crossing the 180th meridian """
-    srs = osr.SpatialReference(geoimg.srs()).ExportToProj4()
-    projin = Proj(srs)
-    projout = Proj(init='epsg:4326')
+def antimeridian_linesplit(lines):
+    """ Split lines crossing the 180th meridian """
     newlines = []
     for line in lines:
-        lastpt = transform(projin, projout, line[0][0], line[0][1])
+        lastpt = [line[0][0], line[0][1]]
         newline = [lastpt]
         for point in line[1:]:
-            pt = transform(projin, projout, point[0], point[1])
+            pt = [point[0], point[1]]
             # check if crosses the antimeridian
             if (abs(pt[0]) > 175) and ((lastpt[0] * pt[0]) < 0):
                 xmin = max((lastpt[0], pt[0]))
@@ -178,7 +175,21 @@ def geolocate(geoimg, lines):
     return newlines
 
 
-def potrace(geoimg, geoloc=False, close=5.0, **kwargs):
+def convert_to_latlon(geoimg, lines):
+    srs = osr.SpatialReference(geoimg.srs()).ExportToProj4()
+    projin = Proj(srs)
+    projout = Proj(init='epsg:4326')
+    newlines = []
+    for line in lines:
+        l = []
+        for point in line:
+            pt = transform(projin, projout, point[0], point[1])
+            l.append(pt)
+        newlines.append(l)
+    return antimeridian_linesplit(newlines)
+
+
+def potrace(geoimg, latlon=True, close=5.0, **kwargs):
     """ Trace raster image using potrace and return geolocated or lat-lon coordinates """
     # assuming single band
     arr = geoimg.read()
@@ -196,10 +207,8 @@ def potrace(geoimg, geoloc=False, close=5.0, **kwargs):
             pt = geoimg.geoloc(point[0], point[1])
             newline.append([pt.x(), pt.y()])
         newlines.append(newline)
-
-    if not geoloc:
-        newlines = geolocate(geoimg, newlines)
-
+    if latlon:
+        newlines = convert_to_latlon(geoimg, newlines)
     return newlines
 
 
