@@ -144,7 +144,52 @@ def close_line_strings(lines, dist=5.0):
     return lines
 
 
-def potrace(geoimg, geoloc=False, close=5.0, **kwargs):
+def antimeridian_linesplit(lines):
+    """ Split lines crossing the 180th meridian """
+    newlines = []
+    for line in lines:
+        lastpt = [line[0][0], line[0][1]]
+        newline = [lastpt]
+        for point in line[1:]:
+            pt = [point[0], point[1]]
+            # check if crosses the antimeridian
+            if (abs(pt[0]) > 175) and ((lastpt[0] * pt[0]) < 0):
+                xmin = max((lastpt[0], pt[0]))
+                xmax = 360 + min((lastpt[0], pt[0]))
+                # calculate crossing latitude
+                ydist = max([pt[1], lastpt[1]]) - min([pt[1], lastpt[1]])
+                m = ydist / (xmax-xmin)
+                if pt[0] > lastpt[0]:
+                    b = pt[1] - m * pt[0]
+                else:
+                    b = lastpt[1] - m * lastpt[0]
+                latcross = m * 180.0 + b
+                # cap off this line
+                newline.append([180.0 * numpy.sign(lastpt[0]), latcross])
+                newlines.append(newline)
+                # create new next line
+                newline = [[180.0 * numpy.sign(pt[0]), latcross]]
+            newline.append(pt)
+            lastpt = pt
+        newlines.append(newline)
+    return newlines
+
+
+def convert_to_latlon(geoimg, lines):
+    srs = osr.SpatialReference(geoimg.srs()).ExportToProj4()
+    projin = Proj(srs)
+    projout = Proj(init='epsg:4326')
+    newlines = []
+    for line in lines:
+        l = []
+        for point in line:
+            pt = transform(projin, projout, point[0], point[1])
+            l.append(pt)
+        newlines.append(l)
+    return antimeridian_linesplit(newlines)
+
+
+def potrace(geoimg, latlon=True, close=5.0, **kwargs):
     """ Trace raster image using potrace and return geolocated or lat-lon coordinates """
     # assuming single band
     arr = geoimg.read()
@@ -155,21 +200,15 @@ def potrace(geoimg, geoloc=False, close=5.0, **kwargs):
     lines = filter_nodata_lines(lines, mask)
     lines = close_line_strings(lines, dist=close)
 
-    if not geoloc:
-        srs = osr.SpatialReference(geoimg.srs()).ExportToProj4()
-        projin = Proj(srs)
-        projout = Proj(init='epsg:4326')
     newlines = []
     for line in lines:
         newline = []
         for point in line:
             pt = geoimg.geoloc(point[0], point[1])
-            pt = [pt.x(), pt.y()]
-            if not geoloc:
-                # convert to lat-lon
-                pt = transform(projin, projout, pt[0], pt[1])
-            newline.append(pt)
+            newline.append([pt.x(), pt.y()])
         newlines.append(newline)
+    if latlon:
+        newlines = convert_to_latlon(geoimg, newlines)
     return newlines
 
 

@@ -1,3 +1,6 @@
+v0.1.2:
+- when converting GeoJSON to lat/lon, split any lines that cross the antimeridian into multiple lines so any line is wholly on one side or the other. This will prevent cliens from rendering lines across the entire globe due.
+
 v0.1.1:
 - vectorize.close_line_strings function added
 - audit logging
