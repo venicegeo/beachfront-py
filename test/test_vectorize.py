@@ -107,7 +107,7 @@ class TestVectorize(unittest.TestCase):
     def _test_trace_line(self):
         """ Trace image of line """
         geoimg = self.create_image_with_line()
-        geojson = vectorize.potrace(geoimg[0], geoloc=False)
+        geojson = vectorize.potrace(geoimg[0], latlon=True)
 
         # check returned geometry
         coords = geojson['features'][0]['geometry']['coordinates']
@@ -118,7 +118,7 @@ class TestVectorize(unittest.TestCase):
     def test_potrace_box(self):
         """ Trace image of box """
         geoimg = self.create_image_with_box()
-        lines = vectorize.potrace(geoimg[0], geoloc=True)
+        lines = vectorize.potrace(geoimg[0], latlon=False)
         # check returned geometry
         self.assertEqual(len(lines[0]), len(self.truth_coords))
         for c in lines[0]:
@@ -129,7 +129,7 @@ class TestVectorize(unittest.TestCase):
         geoimg = self.create_image_with_box()
 
         # check that minsize did not filter out box
-        lines = vectorize.potrace(geoimg[0], minsize=100, geoloc=False)
+        lines = vectorize.potrace(geoimg[0], minsize=100, latlon=True)
         self.assertEqual(len(lines[0]), len(self.truth_coords))
 
         # check that minsize does filter out box
@@ -143,19 +143,17 @@ class TestVectorize(unittest.TestCase):
         # make a nodata region
         arr[0:10, 0:10] = geoimg[0].nodata()
         geoimg[0].write(arr)
-        lines = vectorize.potrace(geoimg[0], geoloc=False)
-
+        lines = vectorize.potrace(geoimg[0], latlon=False)
         self.assertEqual(len(lines), 1)
-
         self.assertEqual(len(lines[0]), 7)
         self.assertEqual(lines[0],
-                         [(0.65, 0.8), (0.8, 0.8), (0.8, 0.5), (0.8, 0.19999999999999996),
-                         (0.5, 0.19999999999999996), (0.2, 0.19999999999999996), (0.2, 0.35)])
+                         [[0.65, 0.8], [0.8, 0.8], [0.8, 0.5], [0.8, 0.19999999999999996],
+                         [0.5, 0.19999999999999996], [0.2, 0.19999999999999996], [0.2, 0.35]])
 
     def test_potrace_empty_image(self):
         """ Trace image that is empty """
         geoimg = create_image(empty=True)
-        lines = vectorize.potrace(geoimg[0], geoloc=False)
+        lines = vectorize.potrace(geoimg[0], latlon=True)
         self.assertEqual(len(lines), 0)
         geoj = vectorize.to_geojson(lines)
         self.assertEqual(len(geoj['features']), 0)
@@ -167,7 +165,7 @@ class TestVectorize(unittest.TestCase):
         # make a nodata region
         arr[0:5, 0:5] = geoimg[0].nodata()
         geoimg[0].write(arr)
-        lines = vectorize.potrace(geoimg[0], geoloc=False)
+        lines = vectorize.potrace(geoimg[0], latlon=True)
         self.assertEqual(len(lines), 0)
         geoj = vectorize.to_geojson(lines)
         self.assertEqual(len(geoj['features']), 0)
@@ -209,14 +207,26 @@ class TestVectorize(unittest.TestCase):
     def test_close_line_strings(self):
         """ Close line strings """
         geoimg = self.create_image_with_box()
-        lines = vectorize.potrace(geoimg[0], geoloc=True, close=6)
+        lines = vectorize.potrace(geoimg[0], latlon=False, close=6)
         self.assertEqual(len(lines[0]), 9)
 
     def test_close_line_strings_real(self):
-        """ Close line strings """
+        """ Close real line strings """
         geoimg = download_image(self.test_url)
         geoimg.set_nodata(0)
         lines = vectorize.potrace(geoimg[0] > 9500, close=5)
         fout = os.path.splitext(os.path.join(os.path.dirname(__file__), os.path.basename(self.test_url)))[0] + '_closed.geojson'
         vectorize.save_geojson(lines, fout)
         print('\nPerform visual inspection on %s' % fout)
+
+    def test_antimeridian(self):
+        """ Split line strings crossing antimeridian into two linestrings """
+        fname = os.path.join(os.path.dirname(__file__), 'test-antimeridian.geojson')
+        with open(fname) as f:
+            gj = json.loads(f.read())
+        lines = []
+        for f in gj['features']:
+            lines.append(f['geometry']['coordinates'])
+        self.assertEqual(len(lines), 3)
+        lines = vectorize.antimeridian_linesplit(lines)
+        self.assertEqual(len(lines), 9)
