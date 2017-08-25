@@ -84,6 +84,7 @@ stage("Dependency Check") {
                 echo "Artifact version ${appvers} exists in Nexus, nothing to do"
             } else {
                 sh """
+		  tar -cvzf ${archiveName} beachfront/ test/ JenkinsFile LISCENSE* environment*.yml requirements*.txt setup.py
                   mvn -X --settings ~/.m2/settings.xml deploy:deploy-file -Dfile=${archiveName} -DrepositoryId=nexus	-Durl="${env.ARTIFACT_STORAGE_DEPLOY_URL}" -DgroupId="org.venice.beachfront" -DgeneratePom=false -Dpackaging=tgz -Dmaven.repo.local="${root}/.m2/repository" -DartifactId=beachfront-py -Dversion=${appvers}
                 """
             }
