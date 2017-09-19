@@ -1,0 +1,8 @@
+name: beachfront-py
+dependencies:
+    - gippy=1.0.0
+    - pypotrace=0.1.3
+    - requests=2.11.1
+    - fiona=1.7.4
+    - pyproj=1.9.5.1
+    - six=1.10.0
