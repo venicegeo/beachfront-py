@@ -78,6 +78,16 @@ def get_features(layer, bbox=None, union=False, filename=''):
     return GeoVector(filename)
 
 
+def get_coastline(bbox):
+    """ Get coastline GeoJSON within bounding box """
+    cmask = open_vector(os.path.join(os.path.dirname(__file__), 'coastline.shp'))
+    lons = [c[0] for c in bbox['features'][0]['geometry']['coordinates'][0]]
+    lats = [c[1] for c in bbox['features'][0]['geometry']['coordinates'][0]]
+    bbox = [min(lons), min(lats), max(lons), max(lats)]
+    gj = get_features_as_geojson(cmask[1], bbox=bbox, union=True)
+    return gj
+
+
 def mask_with_vector(geoimg, vector, filename=''):
     """ Mask geoimage with a vector """
     ext = geoimg.geo_extent()
