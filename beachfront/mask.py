@@ -64,6 +64,9 @@ def get_features(layer, bbox=None, union=False, filename=''):
     if filename == '':
         f, filename = tempfile.mkstemp(suffix='.geojson')
         logger.info('Saving JSON as vector file', action='Save file', actee=filename, actor=__name__)
+        # if no geometries, returns empty geometry collection
+        if features['type'] == 'GeometryCollection':
+            features = {'type': 'FeatureCollection', 'features': []}
         os.write(f, json.dumps(features))
         os.close(f)
     else:
