@@ -57,6 +57,7 @@ stage("Dependency Check") {
         		"""
 	}
     }
+	/*
     stage("Sonar") {
         withCredentials([string(credentialsId: "${env.SONAR_TOKEN}", variable: 'USERNAME')]) {
             withEnv(["HOME=${root}"]) {
@@ -76,7 +77,7 @@ stage("Dependency Check") {
                 """
             }
         }
-    }
+    }*/
 	    stage("Archive") {
         def archiveName = "beachfront-py.tgz"
             def getDependencyStatus = sh(script: """mvn --quiet --settings ~/.m2/settings.xml dependency:get -Dmaven.repo.local="${root}/.m2/repository" -DrepositoryId=nexus -DartifactId=beachfront-py -Dversion=${appvers} -DgroupId="org.venice.beachfront" -Dpackaging=tgz -DremoteRepositories="nexus::default::${env.ARTIFACT_STORAGE_DEPLOY_URL}" >> /dev/null 2>&1""", returnStatus: true)
