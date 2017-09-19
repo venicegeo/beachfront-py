@@ -84,6 +84,8 @@ def mask_with_vector(geoimg, vector, filename=''):
     ds, layer = open_vector(vector[0], vector[1])
 
     geovec = get_features(layer, bbox=[ext.x0(), ext.y0(), ext.x1(), ext.y1()], union=True)
+    if geovec.nfeatures() == 0:
+        raise RuntimeError('No features after masking')
 
     res = geoimg.resolution()
     logger.info('Saving to file %s' % filename, action='Save file', actee=filename, actor=__name__)
