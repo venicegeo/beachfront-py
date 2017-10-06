@@ -8,7 +8,7 @@ node {
     def projectId = "venicegeo:beachfront:beachfront-py"
     def appvers = ""
     def appName = ""
-	
+
     stage("Setup") {
         deleteDir()
 			if(env.GITLAB_CREDS) {
@@ -26,7 +26,7 @@ node {
               rm miniconda.sh
               export PATH="$root/miniconda2/bin:$PATH"
 	      conda config --remove channels defaults
-              conda config --add channels `echo $CONDA_CHANNEL_CREDS_URL | sed -e "s/NEXUSUSER/${NUSER}/g" | sed -e "s/NEXUSPASS/${NPASS}/g"`
+              conda config --add channels `echo $CONDA_CHANNEL__URL | sed -e "s/NEXUSUSER/${NUSER}/g" | sed -e "s/NEXUSPASS/${NPASS}/g"`
               conda env create -f environment.yml -q
             """
         }
