@@ -36,6 +36,8 @@ node {
     withCredentials([
       [$class: 'StringBinding', credentialsId: "${env.THREADFIX_API_KEY}", variable: "THREADFIX_KEY"]
     ]) {
+      sh "pwd"
+      sh "ls -al"
       dir("beachfront-py") {
         sh "ls -al"
         sh "/opt/hp_fortify_sca/bin/sourceanalyzer -b ${env.BUILD_NUMBER} ./beachfront/{*.py,**/*.py} -exclude **/test/*"
