@@ -3,91 +3,43 @@
 node {
     def root = pwd()
     def mvn = tool 'M3'
-    def fortifyBuild = "beachfront-py-${env.BUILD_NUMBER}"
-    def sonar = tool 'SonarQube Scanner 3.0'
     def projectId = "venicegeo:beachfront:beachfront-py"
     def appvers = ""
     def appName = ""
-	
-    stage("Setup") {
-        deleteDir()
-			if(env.GITLAB_CREDS) {
-				git url: "${env.GIT_URL}", branch: "${env.GIT_BRANCH}", credentialsId: "${env.GITLAB_CREDS}"
-			} else {
-				git url: "${env.GIT_URL}", branch: "${env.GIT_BRANCH}"
-}
-	    appvers = sh(script: """git describe --long --tags --always | sed 's/\\./-/'g""", returnStdout: true).trim()
-	    appName = "beachfront-py-${appvers}"
-	withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: "${env.ARTIFACT_READ_ONLY_CREDS}", usernameVariable: "NUSER", passwordVariable: "NPASS"]]) {
-            sh """
-	      rm -f $HOME/.condarc
-              curl -L https://repo.continuum.io/miniconda/Miniconda2-4.3.21-Linux-x86_64.sh -o miniconda.sh
-              bash miniconda.sh -b -p $root/miniconda2
-              rm miniconda.sh
-              export PATH="$root/miniconda2/bin:$PATH"
-	      conda config --remove channels defaults
-              conda config --add channels `echo $CONDA_CHANNEL_CREDS_URL | sed -e "s/NEXUSUSER/${NUSER}/g" | sed -e "s/NEXUSPASS/${NPASS}/g"`
-              conda env create -f environment.yml -q
-            """
-        }
-    }
 
-stage("Dependency Check") {
-        withCredentials([
-          [$class: 'StringBinding', credentialsId: "${env.THREADFIX_API_KEY}", variable: "THREADFIX_KEY"]
-        ]) {
-	            sh """
-        	      /jslave/dependency-check/dependency-check/bin/dependency-check.sh --version
-            	      /jslave/dependency-check/dependency-check/bin/dependency-check.sh --project "beachfront-py" --scan '.' --format "XML" --enableExperimental --disableBundleAudit
-	              /bin/curl -v --insecure -H 'Accept: application/json' -X POST --form file=@dependency-check-report.xml ${env.THREADFIX_URL}/rest/applications/${THREADFIX_ID}/upload?apiKey=${THREADFIX_KEY}
-	    	    """
-	}
+  stage("Setup") {
+    deleteDir()
+      if(env.GITLAB_CREDS) {
+        git url: "${env.GIT_URL}", branch: "${env.GIT_BRANCH}", credentialsId: "${env.GITLAB_CREDS}"
+      } else {
+        git url: "${env.GIT_URL}", branch: "${env.GIT_BRANCH}"
+      }
+
+    appvers = sh(script: """git describe --long --tags --always | sed 's/\\./-/'g""", returnStdout: true).trim()
+    appName = "beachfront-py-${appvers}"
+  }
+
+  stage("Dependency Check") {
+    withCredentials([
+      [$class: 'StringBinding', credentialsId: "${env.THREADFIX_API_KEY}", variable: "THREADFIX_KEY"]
+    ]) {
+      dir("beachfront") {
+        sh "/jslave/dependency-check/dependency-check/bin/dependency-check.sh --version"
+        sh "/jslave/dependency-check/dependency-check/bin/dependency-check.sh --project 'beachfront-py' --scan '.' --format 'XML' --enableExperimental --disableBundleAudit"
+        sh "/bin/curl -v --insecure -H 'Accept: application/json' -X POST --form file=@dependency-check-report.xml ${env.THREADFIX_URL}/rest/applications/${THREADFIX_ID}/upload?apiKey=${THREADFIX_KEY}"
+      }
     }
-    stage("Fortify Scans") {
-        withCredentials([
-          [$class: 'StringBinding', credentialsId: "${env.THREADFIX_API_KEY}", variable: "THREADFIX_KEY"]
-        ]) {
-			sh """
-          		  export PATH="$root/miniconda2/bin:$PATH" && source activate beachfront-py
-          		  /opt/hp_fortify_sca/bin/sourceanalyzer -b ${fortifyBuild} -python-path `python -c "import sys;print ':'.join(sys.path)"` {*.py,**/*.py}
-          		  /opt/hp_fortify_sca/bin/sourceanalyzer -b ${fortifyBuild} -scan -python-path `python -c "import sys;print ':'.join(sys.path)"` -Xmx1G -f fortifyResults-${fortifyBuild}.fpr
-	    		  /bin/curl -v --insecure -H 'Accept: application/json' -X POST --form file=@fortifyResults-${fortifyBuild}.fpr ${env.THREADFIX_URL}/rest/applications/${THREADFIX_ID}/upload?apiKey=${THREADFIX_KEY}
-          		  source deactivate
-          		  ls
-        		"""
-	}
+  }
+
+  stage("Fortify Scans") {
+    withCredentials([
+      [$class: 'StringBinding', credentialsId: "${env.THREADFIX_API_KEY}", variable: "THREADFIX_KEY"]
+    ]) {
+      dir("beachfront") {
+        sh "/opt/hp_fortify_sca/bin/sourceanalyzer -b ${env.BUILD_NUMBER} ./{*.py,**/*.py} -exclude **/test/*"
+        sh "/opt/hp_fortify_sca/bin/sourceanalyzer -b ${env.BUILD_NUMBER}  -scan -Xmx8G -f fortifyResults-${env.BUILD_NUMBER}.fpr"
+        sh "/bin/curl -v --insecure -H 'Accept: application/json' -X POST --form file=@fortifyResults-${env.BUILD_NUMBER}.fpr ${env.THREADFIX_URL}/rest/applications/${THREADFIX_ID}/upload?apiKey=${THREADFIX_KEY}"
+      }
     }
-	/*
-    stage("Sonar") {
-        withCredentials([string(credentialsId: "${env.SONAR_TOKEN}", variable: 'USERNAME')]) {
-            withEnv(["HOME=${root}"]) {
-                sh """export PATH="$root/miniconda2/bin:$PATH" && source activate beachfront-py
-		  ${sonar}/bin/sonar-scanner \
-                    -Dsonar.python.coverage.reportPath=report/coverage/coverage.xml \
-                    -Dsonar.sources=${root}/beachfront/ \
-                    -Dsonar.tests=${root}/test/ \
-                    -Dsonar.host.url=${env.SONAR_URL} \
-                    -Dsonar.projectKey=${projectId} \
-                    -Dsonar.projectName=${projectId} \
-                    -Dsonar.language=py \
-                    -Dsonar.projectBaseDir=${root} \
-                    -Dsonar.projectVersion=${appvers} \
-                    -Dsonar.login=${USERNAME}
-		  source deactivate
-                """
-            }
-        }
-    }*/
-	    stage("Archive") {
-        def archiveName = "beachfront-py.tgz"
-            def getDependencyStatus = sh(script: """mvn --quiet --settings ~/.m2/settings.xml dependency:get -Dmaven.repo.local="${root}/.m2/repository" -DrepositoryId=nexus -DartifactId=beachfront-py -Dversion=${appvers} -DgroupId="org.venice.beachfront" -Dpackaging=tgz -DremoteRepositories="nexus::default::${env.ARTIFACT_STORAGE_DEPLOY_URL}" >> /dev/null 2>&1""", returnStatus: true)
-            if(getDependencyStatus == 0) {
-                echo "Artifact version ${appvers} exists in Nexus, nothing to do"
-            } else {
-                sh """
-		  tar -cvzf ${archiveName} beachfront/ test/ JenkinsFile LICENSE* environment*.yml requirements*.txt setup.py
-                  mvn -X --settings ~/.m2/settings.xml deploy:deploy-file -Dfile=${archiveName} -DrepositoryId=nexus	-Durl="${env.ARTIFACT_STORAGE_DEPLOY_URL}" -DgroupId="org.venice.beachfront" -DgeneratePom=false -Dpackaging=tgz -Dmaven.repo.local="${root}/.m2/repository" -DartifactId=beachfront-py -Dversion=${appvers}
-                """
-            }
-}
+  }
 }
