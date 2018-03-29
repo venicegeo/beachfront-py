@@ -19,8 +19,6 @@ import numpy
 from osgeo import osr, ogr
 import potrace as _potrace
 from pyproj import Proj, transform
-import fiona
-from fiona.crs import from_epsg
 import logging
 
 
@@ -46,23 +44,6 @@ def lines_to_features(lines, source='imagery'):
         features.append(feature)
         gid += 1
     return features
-
-
-def save_shapefile(lines, fout, source='imagery'):
-    """ Create shapefile - NOTE: Currently assumes EPSG:4326! """
-    schema = {
-        'geometry': 'LineString',
-        'properties': {
-            'id': 'int',
-            'source': 'str:24',
-        }
-    }
-    features = lines_to_features(lines, source=source)
-    # TODO - get epsg from geojson
-    crs = from_epsg(4326)
-    logger.info('Saving to file %s' % fout, action='Save file', actee=fout, actor=__name__)
-    with fiona.open(fout, 'w', 'ESRI Shapefile', schema, crs=crs) as output:
-        output.writerecords(features)
 
 
 def to_geojson(lines, source='imagery'):

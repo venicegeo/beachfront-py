@@ -95,14 +95,6 @@ class TestVectorize(unittest.TestCase):
         os.remove(fout)
         # TODO - check populated geojson
 
-    def test_save_shapefile(self):
-        """ Save shapefile """
-        geoimg = self.create_image_with_box()
-        lines = vectorize.potrace(geoimg[0])
-        fout = os.path.join(os.path.dirname(__file__), 'test-shapefile')
-        vectorize.save_shapefile(lines, fout + '.shp')
-        [os.remove(f) for f in glob.glob(fout + '.*')]
-
     # potrace does not trace lines, it's outer edge of polygons
     def _test_trace_line(self):
         """ Trace image of line """
