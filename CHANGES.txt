@@ -1,3 +1,7 @@
+v0.2.0:
+- Added nominal coastline and function for extracting coastline within bounding box
+- Remove save_shapefile function and fiona dependency
+
 v0.1.2:
 - when converting GeoJSON to lat/lon, split any lines that cross the antimeridian into multiple lines so any line is wholly on one side or the other. This will prevent cliens from rendering lines across the entire globe due.
 

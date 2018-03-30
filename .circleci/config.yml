@@ -1,0 +1,118 @@
+# Python CircleCI 2.0 configuration file
+#
+# Check https://circleci.com/docs/2.0/language-python/ for more details
+version: 2
+
+
+references:
+
+  container: &container
+    docker:
+      - image: venicegeo/beachfront:0.2.0
+    working_dir: ~/project
+
+  restore_repo: &restore_repo
+    restore_cache:
+      keys:
+        - v1-repo-{{ .Branch }}-{{ .Revision }}
+        - v1-repo-{{ .Branch }}
+        - v1-repo
+
+jobs:
+
+  checkout_code:
+    <<: *container
+    steps:
+      - *restore_repo
+      - checkout
+      - save_cache:
+          key: v1-repo-{{ .Branch }}-{{ .Revision }}
+          paths:
+            - ~/project
+
+  install_and_test_27:
+    <<: *container
+    steps:  
+      - *restore_repo
+      - restore_cache:
+          keys: 
+            - v1-dependencies27-{{ checksum "requirements.txt"}}
+            - v1-dependencies27
+      - run: |
+            ln -s GDAL-2.2.3-py2.7-linux-x86_64.egg/osgeo /usr/local/lib64/python2.7/site-packages/osgeo
+            pip install virtualenv
+            virtualenv ~/venv27 --system-site-packages
+            . ~/venv27/bin/activate
+            pip install -r requirements.txt
+            pip install -r requirements-dev.txt
+            nosetests -v --with-coverage --cover-package beachfront
+      - save_cache:
+          key: v1-dependencies27-{{ checksum "requirements.txt"}}
+          paths:
+            - ~/venv
+
+  install_and_test_36:
+    <<: *container
+    steps:  
+      - *restore_repo
+      - restore_cache:
+          keys: 
+            - v1-dependencies36-{{ checksum "requirements.txt"}}
+            - v1-dependencies36
+      - run: |
+            python3 -m venv ~/venv
+            . ~/venv/bin/activate
+            pwd
+            pip install -r requirements.txt
+            pip install -r requirements-dev.txt
+            nosetests -v --with-coverage --cover-package beachfront
+      - save_cache:
+          key: v1-dependencies36-{{ checksum "requirements.txt"}}
+          paths:
+            - ~/venv
+
+  deploy:
+    <<: *container
+    steps:
+      - *restore_repo
+      - restore_cache:
+          keys: 
+            - v1-dependencies27-{{ checksum "requirements.txt"}}
+            - v1-dependencies27
+      - run:
+          name: Push tag to github
+          command: |
+            mkdir -p ~/.ssh
+            ssh-keyscan github.com >> ~/.ssh/known_hosts
+            VERSION=`awk -F\' '{print $2,$4}' beachfront/version.py`
+            git tag $VERSION
+            git push origin $VERSION
+      - run:
+          name: Deploy to PyPi
+          command: |
+            . ~/venv/bin/activate
+            pip install twine
+            python setup.py sdist
+            twine upload --username "${PYPI_USER}" --password "${PYPI_PASS}" dist/*
+
+
+workflows:
+  version: 2
+  #build_test_deploy:
+  #  jobs:
+  #    - checkout_code
+  #    - install_and_test_36:
+  #        requires:
+  #          - checkout_code
+  build_test_deploy_27:
+    jobs:
+      - checkout_code
+      - install_and_test_27:
+          requires:
+            - checkout_code
+      - deploy:
+          requires:
+            - install_and_test_27
+          filters:
+            branches:
+              only: master
