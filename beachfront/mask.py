@@ -50,11 +50,11 @@ def get_features_as_geojson(layer, bbox=None, union=False):
             if hasattr(geom, 'GetLinearGeometry'):
                 geom = geom.GetLinearGeometry()
             poly = poly.Union(geom)
-    if bbox is not None:
-        wkt = "POLYGON ((%s %s, %s %s, %s %s, %s %s, %s %s))" % \
-              (bbox[0], bbox[1], bbox[2], bbox[1], bbox[2], bbox[3], bbox[0], bbox[3], bbox[0], bbox[1])
-        bbox_wkt = ogr.CreateGeometryFromWkt(wkt)
-        poly = poly.Intersection(bbox_wkt)
+        if bbox is not None:
+            wkt = "POLYGON ((%s %s, %s %s, %s %s, %s %s, %s %s))" % \
+                (bbox[0], bbox[1], bbox[2], bbox[1], bbox[2], bbox[3], bbox[0], bbox[3], bbox[0], bbox[1])
+            bbox_wkt = ogr.CreateGeometryFromWkt(wkt)
+            poly = poly.Intersection(bbox_wkt)
     return json.loads(poly.ExportToJson())
 
 
