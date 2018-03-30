@@ -41,15 +41,15 @@ jobs:
       - run: |
             ln -s GDAL-2.2.3-py2.7-linux-x86_64.egg/osgeo /usr/local/lib64/python2.7/site-packages/osgeo
             pip install virtualenv
-            virtualenv ~/venv27 --system-site-packages
-            . ~/venv27/bin/activate
+            virtualenv ~/venv --system-site-packages
+            . ~/venv/bin/activate
             pip install -r requirements.txt
             pip install -r requirements-dev.txt
             nosetests -v --with-coverage --cover-package beachfront
       - save_cache:
           key: v1-dependencies27-{{ checksum "requirements.txt"}}
           paths:
-            - ~/venv27
+            - ~/venv
 
   install_and_test_36:
     <<: *container
@@ -90,7 +90,7 @@ jobs:
       - run:
           name: Deploy to PyPi
           command: |
-            . ~/venv27/bin/activate
+            . ~/venv/bin/activate
             pip install twine
             python setup.py sdist
             twine upload --username "${PYPI_USER}" --password "${PYPI_PASS}" dist/*
