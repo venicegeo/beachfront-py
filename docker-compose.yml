@@ -17,19 +17,16 @@ version: '2'
 
 services:
 
-  build:
+  base:
     build:
       context: .
-    image: beachfront-py
-
-  bash:
-    image: beachfront-py
+    image: "beachfront"
     entrypoint: /bin/bash
     volumes:
       - '.:/work:rw'
 
   test:
-    image: beachfront-py
+    image: "beachfront"
     command: bash -c 'nosetests --with-coverage --cover-inclusive --cover-package beachfront -v -s;'
     working_dir: /work
     volumes:
