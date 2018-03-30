@@ -14,9 +14,9 @@ references:
   restore_repo: &restore_repo
     restore_cache:
       keys:
-        - v1-repo-{{ .Branch }}-{{ .Revision }}
-        - v1-repo-{{ .Branch }}
-        - v1-repo
+        - v0-repo-{{ .Branch }}-{{ .Revision }}
+        - v0-repo-{{ .Branch }}
+        - v0-repo
 
 jobs:
 
@@ -26,7 +26,7 @@ jobs:
       - *restore_repo
       - checkout
       - save_cache:
-          key: v1-repo-{{ .Branch }}-{{ .Revision }}
+          key: v0-repo-{{ .Branch }}-{{ .Revision }}
           paths:
             - ~/project
 
@@ -36,8 +36,8 @@ jobs:
       - *restore_repo
       - restore_cache:
           keys: 
-            - v1-dependencies27-{{ checksum "requirements.txt"}}
-            - v1-dependencies27
+            - v0-dependencies27-{{ checksum "requirements.txt"}}
+            - v0-dependencies27
       - run: |
             ln -s GDAL-2.2.3-py2.7-linux-x86_64.egg/osgeo /usr/local/lib64/python2.7/site-packages/osgeo
             pip install virtualenv
@@ -47,7 +47,7 @@ jobs:
             pip install -r requirements-dev.txt
             nosetests -v --with-coverage --cover-package beachfront
       - save_cache:
-          key: v1-dependencies27-{{ checksum "requirements.txt"}}
+          key: v0-dependencies27-{{ checksum "requirements.txt"}}
           paths:
             - ~/venv
 
@@ -57,8 +57,8 @@ jobs:
       - *restore_repo
       - restore_cache:
           keys: 
-            - v1-dependencies36-{{ checksum "requirements.txt"}}
-            - v1-dependencies36
+            - v0-dependencies36-{{ checksum "requirements.txt"}}
+            - v0-dependencies36
       - run: |
             python3 -m venv ~/venv
             . ~/venv/bin/activate
@@ -67,7 +67,7 @@ jobs:
             pip install -r requirements-dev.txt
             nosetests -v --with-coverage --cover-package beachfront
       - save_cache:
-          key: v1-dependencies36-{{ checksum "requirements.txt"}}
+          key: v0-dependencies36-{{ checksum "requirements.txt"}}
           paths:
             - ~/venv
 
@@ -77,8 +77,8 @@ jobs:
       - *restore_repo
       - restore_cache:
           keys: 
-            - v1-dependencies27-{{ checksum "requirements.txt"}}
-            - v1-dependencies27
+            - v0-dependencies27-{{ checksum "requirements.txt"}}
+            - v0-dependencies27
       - run:
           name: Push tag to github
           command: |
