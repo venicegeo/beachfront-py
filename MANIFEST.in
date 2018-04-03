@@ -1,1 +1,2 @@
 include beachfront/coastline.*
+include requirements.txt
