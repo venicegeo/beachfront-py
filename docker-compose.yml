@@ -20,13 +20,13 @@ services:
   base:
     build:
       context: .
-    image: "beachfront"
+    image: "venicegeo/beachfront:latest"
     entrypoint: /bin/bash
     volumes:
       - '.:/work:rw'
 
   test:
-    image: "beachfront"
+    image: "venicegeo/beachfront:latest"
     command: bash -c 'nosetests --with-coverage --cover-inclusive --cover-package beachfront -v -s;'
     working_dir: /work
     volumes:

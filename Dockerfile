@@ -17,7 +17,7 @@ FROM developmentseed/geolambda:cloud
 
 RUN \
     yum makecache fast; \
-    yum install -y agg-devel;
+    yum install -y agg-devel swig;
 
 #RUN apt-get update; \
 #    apt-get install -y python-setuptools python-numpy python-dev libgdal-dev python-gdal swig git g++; \
@@ -41,3 +41,6 @@ COPY requirements*txt $BUILD/
 RUN \
     pip install -r requirements.txt; \
     pip install -r requirements-dev.txt
+
+COPY ./ $BUILD/
+RUN pip install .
