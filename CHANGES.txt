@@ -1,3 +1,6 @@
+v0.2.3:
+- fix gippy exactly at version 1.0.0
+
 v0.2.2:
 - fix install by including requirements.txt in PyPi package
 
