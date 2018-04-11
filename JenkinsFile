@@ -35,26 +35,28 @@ node {
     appName = "beachfront-py-${appvers}"
   }
 
-  stage("Dependency Check") {
-    withCredentials([
-      [$class: 'StringBinding', credentialsId: "${env.THREADFIX_API_KEY}", variable: "THREADFIX_KEY"]
-    ]) {
-      dir("beachfront") {
-        sh "/jslave/dependency-check/dependency-check/bin/dependency-check.sh --version"
-        sh "/jslave/dependency-check/dependency-check/bin/dependency-check.sh --project 'beachfront-py' --scan '.' --format 'XML' --enableExperimental --disableBundleAudit"
-        sh "/bin/curl -v --insecure -H 'Accept: application/json' -X POST --form file=@dependency-check-report.xml ${env.THREADFIX_URL}/rest/applications/${THREADFIX_ID}/upload?apiKey=${THREADFIX_KEY}"
+  if(!env.SKIP_SCANS.toBoolean()) {
+    stage("Dependency Check") {
+      withCredentials([
+        [$class: 'StringBinding', credentialsId: "${env.THREADFIX_API_KEY}", variable: "THREADFIX_KEY"]
+      ]) {
+        dir("beachfront") {
+          sh "/jslave/dependency-check/dependency-check/bin/dependency-check.sh --version"
+          sh "/jslave/dependency-check/dependency-check/bin/dependency-check.sh --project 'beachfront-py' --scan '.' --format 'XML' --enableExperimental --disableBundleAudit"
+          sh "/bin/curl -v --insecure -H 'Accept: application/json' -X POST --form file=@dependency-check-report.xml ${env.THREADFIX_URL}/rest/applications/${THREADFIX_ID}/upload?apiKey=${THREADFIX_KEY}"
+        }
       }
     }
-  }
 
-  stage("Fortify Scans") {
-    withCredentials([
-      [$class: 'StringBinding', credentialsId: "${env.THREADFIX_API_KEY}", variable: "THREADFIX_KEY"]
-    ]) {
-      dir("beachfront") {
-        sh "/opt/hp_fortify_sca/bin/sourceanalyzer -b ${env.BUILD_NUMBER} ./{*.py,**/*.py} -exclude **/test/*"
-        sh "/opt/hp_fortify_sca/bin/sourceanalyzer -b ${env.BUILD_NUMBER}  -scan -Xmx8G -f fortifyResults-${env.BUILD_NUMBER}.fpr"
-        sh "/bin/curl -v --insecure -H 'Accept: application/json' -X POST --form file=@fortifyResults-${env.BUILD_NUMBER}.fpr ${env.THREADFIX_URL}/rest/applications/${THREADFIX_ID}/upload?apiKey=${THREADFIX_KEY}"
+    stage("Fortify Scans") {
+      withCredentials([
+        [$class: 'StringBinding', credentialsId: "${env.THREADFIX_API_KEY}", variable: "THREADFIX_KEY"]
+      ]) {
+        dir("beachfront") {
+          sh "/opt/hp_fortify_sca/bin/sourceanalyzer -b ${env.BUILD_NUMBER} ./{*.py,**/*.py} -exclude **/test/*"
+          sh "/opt/hp_fortify_sca/bin/sourceanalyzer -b ${env.BUILD_NUMBER}  -scan -Xmx8G -f fortifyResults-${env.BUILD_NUMBER}.fpr"
+          sh "/bin/curl -v --insecure -H 'Accept: application/json' -X POST --form file=@fortifyResults-${env.BUILD_NUMBER}.fpr ${env.THREADFIX_URL}/rest/applications/${THREADFIX_ID}/upload?apiKey=${THREADFIX_KEY}"
+        }
       }
     }
   }
