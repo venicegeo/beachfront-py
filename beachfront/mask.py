@@ -108,7 +108,7 @@ def mask_with_vector(geoimg, vector, filename=''):
         logger.error('Error converting extent to 4326: %s' % str(e))
         x0,x1,y0,y1 = ext.x0, ext.x1, ext.y0, ext.y1
 
-    geovec = get_features(layer, bbox=[float(x0), float(y0), float(x1), float(y1])], union=True)
+    geovec = get_features(layer, bbox=[float(x0), float(y0), float(x1), float(y1)], union=True)
     if geovec.nfeatures() == 0:
         raise RuntimeError('No features after masking')
 
