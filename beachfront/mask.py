@@ -101,12 +101,12 @@ def mask_with_vector(geoimg, vector, filename=''):
         projin = Proj(srs)
         projout = Proj(init='epsg:4326')
         logger.info('converting extent to 4326. Input proj is %s' % projin, action='Convert BBOX', actee=geoimg, actor=__name__)
-        x0,y0 = transform(projin, projout, ext.x0, ext.y0)
-        x1,y1 = transform(projin, projout, ext.x1, ext.y1)
+        x0,y0 = transform(projin, projout, ext.x0(), ext.y0())
+        x1,y1 = transform(projin, projout, ext.x1(), ext.y1())
     except Exception, e:
         #logger.error('Error converting extent to 4326: %s' % str(e), action='Convert BBOX', actee=geoimg, actor=__name__)
         logger.error('Error converting extent to 4326: %s' % str(e))
-        x0,x1,y0,y1 = ext.x0, ext.x1, ext.y0, ext.y1
+        x0,x1,y0,y1 = ext.x0(), ext.x1(), ext.y0(), ext.y1()
 
     geovec = get_features(layer, bbox=[x0, y0, x1, y1], union=True)
     if geovec.nfeatures() == 0:
