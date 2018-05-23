@@ -102,7 +102,7 @@ def mask_with_vector(geoimg, vector, filename=''):
         projout = Proj(init='epsg:4326')
         logger.info('converting extent to 4326. Input proj is %s' % projin, action='Convert BBOX', actee=geoimg, actor=__name__)
         x0,y0 = transform(projin, projout, ext.x0, ext.y0)
-        x1,y1 = transform(projin, projout, ext.x0, ext.y0)
+        x1,y1 = transform(projin, projout, ext.x1, ext.y1)
     except:
         logger.error('Error converting extent to 4326', action='Convert BBOX', actee=geoimg, actor=__name__)
         x0,x1,y0,y1 = ext.x0, ext.x1, ext.y0, ext.y1
