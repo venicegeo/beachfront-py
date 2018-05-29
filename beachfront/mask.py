@@ -22,6 +22,7 @@ import gippy.algorithms as alg
 import json
 import numpy as np
 import logging
+from pyproj import Proj, transform
 
 
 logger = logging.getLogger(__name__)
@@ -93,7 +94,21 @@ def mask_with_vector(geoimg, vector, filename=''):
     ext = geoimg.geo_extent()
     ds, layer = open_vector(vector[0], vector[1])
 
-    geovec = get_features(layer, bbox=[ext.x0(), ext.y0(), ext.x1(), ext.y1()], union=True)
+    # Ensure ext coords are the same as the shapefile
+    # For now, hard code as 'epsg:4326' since that is hardcoded in vectorize.py
+    try:
+        srs = osr.SpatialReference(geoimg.srs()).ExportToProj4()
+        projin = Proj(srs)
+        projout = Proj(init='epsg:4326')
+        logger.info('converting extent to 4326. Input proj is %s' % projin, action='Convert BBOX', actee=geoimg, actor=__name__)
+        x0,y0 = transform(projin, projout, ext.x0(), ext.y0())
+        x1,y1 = transform(projin, projout, ext.x1(), ext.y1())
+    except Exception, e:
+        #logger.error('Error converting extent to 4326: %s' % str(e), action='Convert BBOX', actee=geoimg, actor=__name__)
+        logger.error('Error converting extent to 4326: %s' % str(e))
+        x0,x1,y0,y1 = ext.x0(), ext.x1(), ext.y0(), ext.y1()
+
+    geovec = get_features(layer, bbox=[x0, y0, x1, y1], union=True)
     if geovec.nfeatures() == 0:
         raise RuntimeError('No features after masking')
 
