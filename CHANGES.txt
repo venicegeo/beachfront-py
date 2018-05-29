@@ -1,3 +1,6 @@
+v0.2.5:
+- set gippy exactly at version 1.0.0.post3
+
 v0.2.4:
 - fix gippy exactly at version 1.0.0
 
