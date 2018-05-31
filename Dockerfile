@@ -13,28 +13,7 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-FROM developmentseed/geolambda:cloud
-
-RUN \
-    yum makecache fast; \
-    yum install -y agg-devel swig;
-
-#RUN apt-get update; \
-#    apt-get install -y python-setuptools python-numpy python-dev libgdal-dev python-gdal swig git g++; \
-#    apt-get install -y libagg-dev libpotrace-dev; \
-#    easy_install pip; pip install wheel;
-
-ENV \
-    POTRACE_VERSION=1.14
-
-# install potrace
-RUN \
-    wget http://potrace.sourceforge.net/download/$POTRACE_VERSION/potrace-$POTRACE_VERSION.tar.gz; \
-    tar -xzvf potrace-$POTRACE_VERSION.tar.gz; \
-    cd potrace-$POTRACE_VERSION; \
-    ./configure --with-libpotrace; \
-    make && make install && cd .. && \
-    rm -rf potrace-$POTRACE_VERSION*
+FROM venicegeo/beachfront:latest
 
 COPY requirements*txt $BUILD/
 
@@ -42,5 +21,8 @@ RUN \
     pip install -r requirements.txt; \
     pip install -r requirements-dev.txt
 
-COPY ./ $BUILD/
+COPY . $BUILD/
+
 RUN pip install .
+
+WORKDIR /home/geolambda
