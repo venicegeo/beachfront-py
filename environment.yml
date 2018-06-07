@@ -2,5 +2,5 @@ name: beachfront-py
 dependencies:
     - gippy=1.0.0.post3
     - pypotrace=0.1.3
-    - requests=2.11.1
+    - requests=2.13.0
     - pyproj=1.9.5.1
