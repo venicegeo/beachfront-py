@@ -1,13 +1,31 @@
 # beachfront-py
 
-beachfront-py is a library of functions used for the creation of vector shorelines automatically from imagery.
+beachfront-py is a library of utility functions used for creating vector coastline regions from raster data written by the Beachfront team for algorithm authors.
 
-## Installation
-There are several system libraries required should be installed before installing beachfront-py. On a debian system:
+## Requirements
+Before building and running the beachfront-py project, please ensure that the following components are available and/or installed, as necessary:
+- [Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) (for checking out repository source)
+- [pip](https://pip.pypa.io/en/stable/installing/) (for installing required libraries
 
-    $ apt-get install -y python-setuptools python-numpy python-dev libgdal-dev python-gdal swig git g++ libagg-dev libpotrace-dev
+The following libraries are required:
+| Library | Version                  |
+|---------|--------------------------|
+| GDAL    | 2.1.0 or higher          |
+| Potrace | 1.14                     |
+| Python | Recommended 2.7 or higher |
 
-GDAL version 2.1.0 or higher is required, as is Potrace v1.14
+## Setup
+Navigate to the project root directory where the repository will live, and clone the git repository in that location:
+
+	$ mkdir -p {PROJECT_DIR}/src/github.com/venicegeo	
+	$ cd {PROJECT_DIR}/src/github.com/venicegeo
+    $ git clone git@github.com:venicegeo/beachfront-py.git
+
+There are several system libraries required should be installed before installing beachfront-py.
+
+ On a linux system, install the necessary libraries by running the following command from a command-line interface:
+
+      $ apt-get install -y python-setuptools python-numpy python-dev libgdal-dev python-gdal swig git g++ libagg-dev libpotrace-dev
 
 Then, from this directory (contaning this repo) install the Python requirements and beachfront-py. The use of a virtual environment is recommended.
 
@@ -15,7 +33,6 @@ Then, from this directory (contaning this repo) install the Python requirements 
     $ source venv/bin/activate
     (venv) $ pip install -r requirements.txt
     (venv) $ pip install .
-
 
 ## Modules & Usage
 
