@@ -8,6 +8,7 @@ Before building and running the beachfront-py project, please ensure that the fo
 - [pip](https://pip.pypa.io/en/stable/installing/) (for installing required libraries
 
 The following libraries are required:
+
 | Library | Version                  |
 |---------|--------------------------|
 | GDAL    | 2.1.0 or higher          |
