@@ -41,6 +41,10 @@ def open_vector(filename, layer=''):
 def get_features_as_geojson(layer, bbox=None, union=False):
     """ Get features in this layer and return as GeoJSON """
     if bbox is not None:
+        #Very large bounding boxes that cross the meridian are assumed to actually cross the antimeridian.
+        if (bbox[2] < bbox[0] and (bbox[0] - bbox[2]) > 180):
+            bbox[2] = 180 + (360 - (bbox[0]-bbox[2])) #Move x2 (bbox[2]) from [-180,0] to [180,360]
+
         layer.SetSpatialFilterRect(bbox[0], bbox[3], bbox[2], bbox[1])
     poly = ogr.Geometry(ogr.wkbPolygon)
     if union:
